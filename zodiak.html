@@ -3,150 +3,149 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tes Zodiak & Kepribadian</title>
+<title>Tes Zodiak Pink</title>
 <style>
-    body {
-        font-family: "Poppins", sans-serif;
-        background: linear-gradient(135deg, #ffd4e5, #ff8ac0);
-        text-align: center;
-        padding: 40px;
-        color: #b30059;
-    }
-
-    h1 {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-        text-shadow: 0 0 10px #fff;
-    }
-
-    .card {
-        background: rgba(255, 255, 255, 0.6);
-        backdrop-filter: blur(10px);
-        padding: 25px;
-        border-radius: 25px;
-        width: 330px;
-        margin: 0 auto;
-        box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
-    }
-
-    select, button {
-        width: 80%;
-        padding: 12px;
-        border-radius: 15px;
-        margin-top: 15px;
-        border: none;
-        outline: none;
-        font-size: 1rem;
-        background: #ffb3d6;
-        color: #b30059;
-        font-weight: bold;
-        box-shadow: 0 0 10px rgba(255, 0, 128, 0.2);
-        cursor: pointer;
-    }
-
-    button:hover {
-        background: #ff8ac0;
-        transform: scale(1.05);
-    }
-
-    .result {
-        margin-top: 20px;
-        font-size: 1.2rem;
-        font-weight: bold;
-        opacity: 0;
-        transition: 0.6s;
-    }
-
-    /* Love floating animation */
-    .love {
-        position: fixed;
-        color: #ff006e;
-        font-size: 25px;
-        animation: floatUp 2.5s linear forwards;
-        pointer-events: none;
-    }
-
-    @keyframes floatUp {
-        0% { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(-150px); opacity: 0; }
-    }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ffc1e3, #ffe4f2);
+    color: #d63384;
+    text-align: center;
+    padding: 40px;
+  }
+  h1 {
+    font-size: 2.5rem;
+    color: #ff4fa3;
+  }
+  .card {
+    background: #ffffffcc;
+    border-radius: 20px;
+    padding: 20px;
+    width: 330px;
+    margin: 0 auto;
+    box-shadow: 0 10px 20px rgba(255, 0, 128, 0.2);
+    transition: transform .3s ease;
+  }
+  .card:hover {
+    transform: scale(1.03);
+  }
+  input {
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #ff8ac9;
+    width: 80%;
+    margin-top: 15px;
+    color: #d63384;
+  }
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background: #ff66b3;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: .3s;
+  }
+  button:hover {
+    background: #ff4398;
+  }
+  .result {
+    margin-top: 25px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity .6s ease;
+  }
+  .show {
+    opacity: 1;
+  }
+  .love {
+    font-size: 1.8rem;
+    animation: pulse 1s infinite alternate;
+  }
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.2); }
+  }
+  /* Surprise pop effect */
+  .pop {
+    animation: pop .5s ease;
+  }
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
 </style>
 </head>
 <body>
-    <h1>✨ Tes Zodiak & Kepribadian 💕</h1>
-
-    <div class="card">
-        <label>Pilih Zodiak Kamu:</label><br>
-        <select id="zodiak">
-            <option value="">-- Pilih --</option>
-            <option>Aries</option>
-            <option>Taurus</option>
-            <option>Gemini</option>
-            <option>Cancer</option>
-            <option>Leo</option>
-            <option>Virgo</option>
-            <option>Libra</option>
-            <option>Scorpio</option>
-            <option>Sagittarius</option>
-            <option>Capricorn</option>
-            <option>Aquarius</option>
-            <option>Pisces</option>
-        </select>
-
-        <button onclick="cekZodiak()">Lihat Kepribadian ✨</button>
-
-        <div id="hasil" class="result"></div>
-    </div>
+  <h1>💗 Tes Zodiak Kamu 💗</h1>
+  <div class="card">
+    <p>Masukkan tanggal lahir kamu</p>
+    <input type="date" id="birth" />
+    <button onclick="cekZodiak()">Cek Zodiak 💕</button>
+    <div id="hasil" class="result"></div>
+  </div>
 
 <script>
-    const data = {
-        "Aries": "Pemberani, penuh energi, dan suka tantangan! ❤️",
-        "Taurus": "Penyabar, setia, dan penyuka kenyamanan. 💕",
-        "Gemini": "Ceria, komunikatif, dan tidak gampang bosan! 💗",
-        "Cancer": "Peka, penyayang, dan punya hati paling lembut. 💞",
-        "Leo": "Percaya diri, karismatik, dan suka jadi pusat perhatian! 💖",
-        "Virgo": "Perfeksionis, cerdas, dan perhatian banget sama detail. 🌸",
-        "Libra": "Romantis, harmonis, dan pecinta keindahan. 💘",
-        "Scorpio": "Misterius, intens, dan sangat setia kalau sudah sayang. 🔥",
-        "Sagittarius": "Petualang, optimis, dan suka kebebasan! ✨",
-        "Capricorn": "Ambisius, disiplin, dan pekerja keras. ⭐",
-        "Aquarius": "Unik, visioner, dan punya pemikiran out of the box! 🌟",
-        "Pisces": "Lembut, artistik, dan romantis banget. 💙"
-    };
+function cekZodiak() {
+  const birth = document.getElementById('birth').value;
+  if (!birth) {
+    alert('Masukkan tanggal lahirmu dulu yaa 💖');
+    return;
+  }
 
-    function cekZodiak() {
-        const z = document.getElementById("zodiak").value;
-        const hasil = document.getElementById("hasil");
+  const date = new Date(birth);
+  const d = date.getDate();
+  const m = date.getMonth() + 1;
 
-        if (!z) {
-            hasil.style.opacity = 1;
-            hasil.innerHTML = "Pilih dulu zodiaknya yaa 💗";
-            return;
-        }
+  let zodiak = '';
+  let personality = '';
 
-        // Surprise effect: delay + floating hearts
-        hasil.style.opacity = 0;
-        setTimeout(() => {
-            hasil.innerHTML = data[z] || "";
-            hasil.style.opacity = 1;
-        }, 500);
+  if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) {
+    zodiak = 'Aries ♈';
+    personality = 'Kamu penuh energi, berani, dan nggak takut tantangan! 💥';
+  } else if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) {
+    zodiak = 'Taurus ♉';
+    personality = 'Stabil, setia, dan suka kenyamanan. Bucin tapi elegan 💗';
+  } else if ((m === 5 && d >= 21) || (m === 6 && d <= 20)) {
+    zodiak = 'Gemini ♊';
+    personality = 'Ceria, pintar, dan gampang bikin orang jatuh hati 😘';
+  } else if ((m === 6 && d >= 21) || (m === 7 && d <= 22)) {
+    zodiak = 'Cancer ♋';
+    personality = 'Lembut, penyayang, dan suka bikin nyaman 💞';
+  } else if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) {
+    zodiak = 'Leo ♌';
+    personality = 'Percaya diri, bersinar, dan penuh kharisma ✨';
+  } else if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) {
+    zodiak = 'Virgo ♍';
+    personality = 'Rapi, pintar, perhatian, dan penuh detail 💕';
+  } else if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) {
+    zodiak = 'Libra ♎';
+    personality = 'Estetik, romantis, dan punya vibes sweet banget 💖';
+  } else if ((m === 10 && d >= 23) || (m === 11 && d <= 21)) {
+    zodiak = 'Scorpio ♏';
+    personality = 'Misterius, intens, dan penuh passion 🔥';
+  } else if ((m === 11 && d >= 22) || (m === 12 && d <= 21)) {
+    zodiak = 'Sagittarius ♐';
+    personality = 'Petualang, bebas, dan selalu fun 💘';
+  } else if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) {
+    zodiak = 'Capricorn ♑';
+    personality = 'Kuat, ambisius, dan dewasa banget 💗';
+  } else if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) {
+    zodiak = 'Aquarius ♒';
+    personality = 'Unik, kreatif, dan punya pikiran beda dari yang lain 💞';
+  } else if ((m === 2 && d >= 19) || (m === 3 && d <= 20)) {
+    zodiak = 'Pisces ♓';
+    personality = 'Lembut, dreamy, dan penuh cinta 💗';
+  }
 
-        generateLove();
-        setTimeout(generateLove, 500);
-        setTimeout(generateLove, 900);
-    }
+  const hasil = document.getElementById('hasil');
+  hasil.innerHTML = `<div class='love'>💖💗💖</div><br> Zodiak kamu adalah <b>${zodiak}</b><br>${personality}`;
+  hasil.classList.add('show', 'pop');
 
-    function generateLove() {
-        const love = document.createElement("div");
-        love.className = "love";
-        love.textContent = "💖";
-        love.style.left = Math.random() * window.innerWidth + "px";
-        love.style.top = (window.innerHeight - 30) + "px";
-        document.body.appendChild(love);
-
-        setTimeout(() => love.remove(), 2500);
-    }
+  setTimeout(() => hasil.classList.remove('pop'), 700);
+}
 </script>
-
 </body>
 </html>
