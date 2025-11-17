@@ -1,90 +1,151 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tes Zodiak Pink</title>
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ffc1e3, #ffe4f2);
+    color: #d63384;
+    text-align: center;
+    padding: 40px;
+  }
+  h1 {
+    font-size: 2.5rem;
+    color: #ff4fa3;
+  }
+  .card {
+    background: #ffffffcc;
+    border-radius: 20px;
+    padding: 20px;
+    width: 330px;
+    margin: 0 auto;
+    box-shadow: 0 10px 20px rgba(255, 0, 128, 0.2);
+    transition: transform .3s ease;
+  }
+  .card:hover {
+    transform: scale(1.03);
+  }
+  input {
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #ff8ac9;
+    width: 80%;
+    margin-top: 15px;
+    color: #d63384;
+  }
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background: #ff66b3;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: .3s;
+  }
+  button:hover {
+    background: #ff4398;
+  }
+  .result {
+    margin-top: 25px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity .6s ease;
+  }
+  .show {
+    opacity: 1;
+  }
+  .love {
+    font-size: 1.8rem;
+    animation: pulse 1s infinite alternate;
+  }
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.2); }
+  }
+  /* Surprise pop effect */
+  .pop {
+    animation: pop .5s ease;
+  }
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <h1>💗 Tes Zodiak Kamu 💗</h1>
+  <div class="card">
+    <p>Masukkan tanggal lahir kamu</p>
+    <input type="date" id="birth" />
+    <button onclick="cekZodiak()">Cek Zodiak 💕</button>
+    <div id="hasil" class="result"></div>
+  </div>
 
-export default function QuizIPA() {
-  const questions = [
-    {
-      q: "Apa fungsi utama klorofil pada tumbuhan?",
-      options: [
-        "Mengangkut air",
-        "Menyerap cahaya untuk fotosintesis",
-        "Melindungi dari hama",
-        "Menyimpan cadangan makanan",
-      ],
-      answer: 1,
-    },
-    {
-      q: "Planet manakah yang dikenal sebagai 'Planet Merah'?",
-      options: ["Venus", "Mars", "Jupiter", "Saturnus"],
-      answer: 1,
-    },
-    {
-      q: "Gaya diukur menggunakan satuan...",
-      options: ["Joule", "Newton", "Watt", "Ohm"],
-      answer: 1,
-    },
-  ];
+<script>
+function cekZodiak() {
+  const birth = document.getElementById('birth').value;
+  if (!birth) {
+    alert('Masukkan tanggal lahirmu dulu yaa 💖');
+    return;
+  }
 
-  const [index, setIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [finished, setFinished] = useState(false);
+  const date = new Date(birth);
+  const d = date.getDate();
+  const m = date.getMonth() + 1;
 
-  const handleAnswer = (i) => {
-    if (i === questions[index].answer) setScore(score + 1);
-    if (index + 1 < questions.length) setIndex(index + 1);
-    else setFinished(true);
-  };
+  let zodiak = '';
+  let personality = '';
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 flex items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-xl"
-      >
-        <Card className="rounded-2xl shadow-xl bg-white/60 backdrop-blur p-4">
-          <CardContent>
-            {!finished ? (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-center">Kuis IPA Estetik</h1>
-                <p className="text-lg font-medium">{questions[index].q}</p>
-                <div className="grid gap-3">
-                  {questions[index].options.map((opt, i) => (
-                    <motion.div whileTap={{ scale: 0.95 }} key={i}>
-                      <Button
-                        className="w-full rounded-xl p-4 text-base shadow"
-                        onClick={() => handleAnswer(i)}
-                      >
-                        {opt}
-                      </Button>
-                    </motion.div>
-                  ))}
-                </div>
-                <p className="text-center text-sm opacity-70">
-                  Pertanyaan {index + 1} dari {questions.length}
-                </p>
-              </div>
-            ) : (
-              <div className="text-center space-y-6">
-                <h1 className="text-2xl font-bold">Kuis Selesai!</h1>
-                <p className="text-xl font-semibold">Skor Anda: {score}</p>
-                <Button
-                  className="rounded-xl p-4 text-base shadow"
-                  onClick={() => {
-                    setIndex(0);
-                    setScore(0);
-                    setFinished(false);
-                  }}
-                >
-                  Main Lagi
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-    </div>
-  );
+  if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) {
+    zodiak = 'Aries ♈';
+    personality = 'Kamu penuh energi, berani, dan nggak takut tantangan! 💥';
+  } else if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) {
+    zodiak = 'Taurus ♉';
+    personality = 'Stabil, setia, dan suka kenyamanan. Bucin tapi elegan 💗';
+  } else if ((m === 5 && d >= 21) || (m === 6 && d <= 20)) {
+    zodiak = 'Gemini ♊';
+    personality = 'Ceria, pintar, dan gampang bikin orang jatuh hati 😘';
+  } else if ((m === 6 && d >= 21) || (m === 7 && d <= 22)) {
+    zodiak = 'Cancer ♋';
+    personality = 'Lembut, penyayang, dan suka bikin nyaman 💞';
+  } else if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) {
+    zodiak = 'Leo ♌';
+    personality = 'Percaya diri, bersinar, dan penuh kharisma ✨';
+  } else if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) {
+    zodiak = 'Virgo ♍';
+    personality = 'Rapi, pintar, perhatian, dan penuh detail 💕';
+  } else if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) {
+    zodiak = 'Libra ♎';
+    personality = 'Estetik, romantis, dan punya vibes sweet banget 💖';
+  } else if ((m === 10 && d >= 23) || (m === 11 && d <= 21)) {
+    zodiak = 'Scorpio ♏';
+    personality = 'Misterius, intens, dan penuh passion 🔥';
+  } else if ((m === 11 && d >= 22) || (m === 12 && d <= 21)) {
+    zodiak = 'Sagittarius ♐';
+    personality = 'Petualang, bebas, dan selalu fun 💘';
+  } else if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) {
+    zodiak = 'Capricorn ♑';
+    personality = 'Kuat, ambisius, dan dewasa banget 💗';
+  } else if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) {
+    zodiak = 'Aquarius ♒';
+    personality = 'Unik, kreatif, dan punya pikiran beda dari yang lain 💞';
+  } else if ((m === 2 && d >= 19) || (m === 3 && d <= 20)) {
+    zodiak = 'Pisces ♓';
+    personality = 'Lembut, dreamy, dan penuh cinta 💗';
+  }
+
+  const hasil = document.getElementById('hasil');
+  hasil.innerHTML = `<div class='love'>💖💗💖</div><br> Zodiak kamu adalah <b>${zodiak}</b><br>${personality}`;
+  hasil.classList.add('show', 'pop');
+
+  setTimeout(() => hasil.classList.remove('pop'), 700);
 }
+</script>
+</body>
+</html>
