@@ -1,134 +1,191 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tes Zodiak Pink - Mode Ganda</title>
-<style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #ffc1e3, #ffe4f2);
-    color: #d63384;
-    text-align: center;
-    padding: 40px;
+import React, { useEffect, useState } from "react";
+
+// Mix & Match Outfit — single-file React component
+// Tailwind CSS assumed available in the project (e.g. Next.js / Vite + Tailwind)
+
+const SAMPLE_ITEMS = [
+  // tops
+  { id: "t1", kind: "Top", name: "White Tee", image: "https://images.unsplash.com/photo-1520975665193-0b0ea1b63f4a?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=1", color: "White", style: "Casual" },
+  { id: "t2", kind: "Top", name: "Striped Shirt", image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=2", color: "Blue", style: "Smart Casual" },
+  { id: "t3", kind: "Top", name: "Blouse", image: "https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=3", color: "Pink", style: "Dressy" },
+  // bottoms
+  { id: "b1", kind: "Bottom", name: "Denim Jeans", image: "https://images.unsplash.com/photo-1503342217505-b0a15a0c9a0f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=4", color: "Blue", style: "Casual" },
+  { id: "b2", kind: "Bottom", name: "Black Trousers", image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=5", color: "Black", style: "Smart" },
+  { id: "b3", kind: "Bottom", name: "Skirt", image: "https://images.unsplash.com/photo-1520975698513-4d6b3d7b0f6f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=6", color: "Beige", style: "Dressy" },
+  // shoes
+  { id: "s1", kind: "Shoes", name: "White Sneakers", image: "https://images.unsplash.com/photo-1519744792095-2f2205e87b6f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=7", color: "White", style: "Casual" },
+  { id: "s2", kind: "Shoes", name: "Loafers", image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=8", color: "Brown", style: "Smart" },
+  { id: "s3", kind: "Shoes", name: "Heels", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=9", color: "Black", style: "Dressy" },
+  // accessories
+  { id: "a1", kind: "Accessory", name: "Gold Necklace", image: "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=10", color: "Gold", style: "Dressy" },
+  { id: "a2", kind: "Accessory", name: "Cap", image: "https://images.unsplash.com/photo-1514995669114-2b6fb0a76f5f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=11", color: "Black", style: "Casual" },
+  { id: "a3", kind: "Accessory", name: "Watch", image: "https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=12", color: "Silver", style: "Smart" },
+];
+
+const KINDS = ["Top", "Bottom", "Shoes", "Accessory"];
+
+export default function MixMatchOutfit() {
+  const [library] = useState(SAMPLE_ITEMS);
+  const [selected, setSelected] = useState({ Top: null, Bottom: null, Shoes: null, Accessory: null });
+  const [locked, setLocked] = useState({ Top: false, Bottom: false, Shoes: false, Accessory: false });
+  const [saved, setSaved] = useState([]);
+  const [filter, setFilter] = useState({ color: "All", style: "All" });
+
+  useEffect(() => {
+    const loaded = window.localStorage.getItem("mm_saved_outfits");
+    if (loaded) setSaved(JSON.parse(loaded));
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("mm_saved_outfits", JSON.stringify(saved));
+  }, [saved]);
+
+  useEffect(() => {
+    // initialize with a random outfit
+    randomizeAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function pickRandom(kind) {
+    const pool = library.filter((i) => i.kind === kind && (filter.color === "All" || i.color === filter.color) && (filter.style === "All" || i.style === filter.style));
+    if (pool.length === 0) return null;
+    return pool[Math.floor(Math.random() * pool.length)];
   }
-  h1 { font-size: 2.5rem; color: #ff4fa3; }
-  .mode-btn {
-    background: #ff77c9;
-    padding: 10px 20px;
-    border-radius: 20px;
-    border: none;
-    cursor: pointer;
-    margin: 5px;
-    color: white;
+
+  function randomizeAll() {
+    const next = { ...selected };
+    KINDS.forEach((k) => {
+      if (!locked[k]) next[k] = pickRandom(k);
+    });
+    setSelected(next);
   }
-  .active { background: #ff3fa5; }
-  .card {
-    background: #ffffffcc;
-    border-radius: 20px;
-    padding: 20px;
-    width: 340px;
-    margin: 20px auto;
-    box-shadow: 0 10px 20px rgba(255, 0, 128, 0.25);
+
+  function toggleLock(kind) {
+    setLocked((s) => ({ ...s, [kind]: !s[kind] }));
   }
-  input, textarea {
-    width: 80%; padding: 10px;
-    margin-top: 10px;
-    border-radius: 10px;
-    border: 2px solid #ff8ac9;
+
+  function selectItem(item) {
+    setSelected((s) => ({ ...s, [item.kind]: item }));
   }
-  button { padding: 10px 20px; margin-top: 15px; background:#ff66b3; color:white; border:none; border-radius:20px; cursor:pointer; }
-  button:hover { background:#ff3f99; }
-  .result { margin-top:20px; font-size:1.2rem; font-weight:600; opacity:0; transition:opacity .6s ease; }
-  .show { opacity:1; }
-  .love { font-size:1.8rem; animation:pulse 1s infinite alternate; }
-  @keyframes pulse{ from{transform:scale(1);} to{transform:scale(1.2);} }
-  .pop{ animation:pop .5s ease; }
-  @keyframes pop{ 0%{transform:scale(.5);opacity:0;} 100%{transform:scale(1);opacity:1;} }
-</style>
-</head>
-<body>
-<h1>💗 Tes Zodiak Mode Ganda 💗</h1>
 
-<!-- MODE SELECTOR -->
-<button class="mode-btn active" onclick="setMode('tanggal')">Tanggal Lahir 💕</button>
-<button class="mode-btn" onclick="setMode('kepribadian')">Kepribadian 💞</button>
-
-<!-- CARD TANGGAL LAHIR -->
-<div id="modeTanggal" class="card">
-  <p>Masukkan tanggal lahirmu</p>
-  <input type="date" id="birth" />
-  <button onclick="cekZodiakTanggal()">Cek Zodiak 💗</button>
-</div>
-
-<!-- CARD KEPRIBADIAN -->
-<div id="modeKepribadian" class="card" style="display:none;">
-  <p>Deskripsikan sedikit tentang dirimu 💖</p>
-  <textarea id="desc" rows="4" placeholder="Contoh: aku orangnya sensitif dan penyayang..."></textarea>
-  <button onclick="cekZodiakKepribadian()">Tebak Zodiak 💕</button>
-</div>
-
-<div id="hasil" class="result"></div>
-
-<script>
-function setMode(mode){
-  document.querySelectorAll('.mode-btn').forEach(btn=>btn.classList.remove('active'));
-  if(mode==='tanggal'){
-    document.querySelectorAll('.mode-btn')[0].classList.add('active');
-    document.getElementById('modeTanggal').style.display='block';
-    document.getElementById('modeKepribadian').style.display='none';
-  } else {
-    document.querySelectorAll('.mode-btn')[1].classList.add('active');
-    document.getElementById('modeTanggal').style.display='none';
-    document.getElementById('modeKepribadian').style.display='block';
+  function saveCurrent(name = null) {
+    const outfit = { id: Date.now(), name: name || `Outfit ${new Date().toLocaleString()}`, items: selected };
+    setSaved((s) => [outfit, ...s]);
   }
-  document.getElementById('hasil').innerHTML='';
-}
 
-function zodiakFromDate(d,m){
-  if((m===3&&d>=21)||(m===4&&d<=19)) return 'Aries ♈ – Energi & keberanian 💥';
-  if((m===4&&d>=20)||(m===5&&d<=20)) return 'Taurus ♉ – Stabil & penyayang 💗';
-  if((m===5&&d>=21)||(m===6&&d<=20)) return 'Gemini ♊ – Ceria & pintar 😘';
-  if((m===6&&d>=21)||(m===7&&d<=22)) return 'Cancer ♋ – Lembut & penuh cinta 💞';
-  if((m===7&&d>=23)||(m===8&&d<=22)) return 'Leo ♌ – Kharismatik ✨';
-  if((m===8&&d>=23)||(m===9&&d<=22)) return 'Virgo ♍ – Rapi & perhatian 💕';
-  if((m===9&&d>=23)||(m===10&&d<=22)) return 'Libra ♎ – Estetik & romantis 💖';
-  if((m===10&&d>=23)||(m===11&&d<=21)) return 'Scorpio ♏ – Misterius & intens 🔥';
-  if((m===11&&d>=22)||(m===12&&d<=21)) return 'Sagittarius ♐ – Bebas & fun 💘';
-  if((m===12&&d>=22)||(m===1&&d<=19)) return 'Capricorn ♑ – Ambisius 💗';
-  if((m===1&&d>=20)||(m===2&&d<=18)) return 'Aquarius ♒ – Unik & kreatif 💞';
-  return 'Pisces ♓ – Dreamy & penuh cinta 💗';
-}
+  function removeSaved(id) {
+    setSaved((s) => s.filter((o) => o.id !== id));
+  }
 
-function cekZodiakTanggal(){
-  const val=document.getElementById('birth').value;
-  if(!val) return alert('Isi tanggal lahir dulu yaa 💖');
-  const date=new Date(val);
-  const d=date.getDate();
-  const m=date.getMonth()+1;
-  tampilkan(zodiakFromDate(d,m));
-}
+  function exportSaved() {
+    const blob = new Blob([JSON.stringify(saved, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "saved-outfits.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
-function cekZodiakKepribadian(){
-  const text=document.getElementById('desc').value.toLowerCase();
-  if(!text) return alert('Tulis sedikit tentang dirimu dulu 💗');
-  let guess='';
-  if(text.includes('sensitif')||text.includes('penyayang')||text.includes('care')) guess='Cancer ♋ atau Pisces ♓ – vibes lembut 💞';
-  else if(text.includes('pemimpin')||text.includes('percaya diri')) guess='Leo ♌ – kuat & bersinar ✨';
-  else if(text.includes('pemikir')||text.includes('unik')) guess='Aquarius ♒ – original banget 💗';
-  else if(text.includes('detail')||text.includes('rapi')) guess='Virgo ♍ – perfeksionis manis 💕';
-  else if(text.includes('petualang')||text.includes('bebas')) guess='Sagittarius ♐ – fun & eksploratif 💘';
-  else guess='Libra ♎ – sweet & easygoing 💖';
+  function itemsByKind(kind) {
+    return library.filter((i) => i.kind === kind && (filter.color === "All" || i.color === filter.color) && (filter.style === "All" || i.style === filter.style));
+  }
 
-  tampilkan(guess);
-}
+  const uniqueColors = ["All", ...Array.from(new Set(library.map((i) => i.color)))];
+  const uniqueStyles = ["All", ...Array.from(new Set(library.map((i) => i.style)))];
 
-function tampilkan(text){
-  const hasil=document.getElementById('hasil');
-  hasil.innerHTML=`<div class='love'>💗💖💗</div><br>${text}`;
-  hasil.classList.add('show','pop');
-  setTimeout(()=>hasil.classList.remove('pop'),700);
+  return (
+    <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Mix & Match Outfit</h1>
+        <div className="flex gap-2">
+          <button onClick={randomizeAll} className="px-3 py-2 rounded bg-gray-800 text-white hover:opacity-90">Randomize</button>
+          <button onClick={() => saveCurrent()} className="px-3 py-2 rounded border">Save</button>
+          <button onClick={exportSaved} className="px-3 py-2 rounded border">Export</button>
+        </div>
+      </header>
+
+      <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {KINDS.map((k) => (
+          <div key={k} className="bg-white rounded-xl shadow p-4 flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold">{k}</h2>
+              <div className="flex items-center gap-2">
+                <button onClick={() => toggleLock(k)} className={`px-2 py-1 rounded text-sm ${locked[k] ? "bg-yellow-300" : "bg-gray-100"}`}>{locked[k] ? "Locked" : "Lock"}</button>
+              </div>
+            </div>
+
+            <div className="flex-1 flex items-center justify-center">
+              {selected[k] ? (
+                <div className="text-center">
+                  <img src={selected[k].image} alt={selected[k].name} className="w-40 h-40 object-cover rounded-md mx-auto mb-2 shadow" />
+                  <div className="text-sm font-medium">{selected[k].name}</div>
+                  <div className="text-xs text-gray-500">{selected[k].color} • {selected[k].style}</div>
+                </div>
+              ) : (
+                <div className="text-gray-400">No selection</div>
+              )}
+            </div>
+
+            <div className="mt-3">
+              <div className="text-xs text-gray-600 mb-2">Choose from library</div>
+              <div className="grid grid-cols-3 gap-2">
+                {itemsByKind(k).map((it) => (
+                  <button key={it.id} onClick={() => selectItem(it)} className="group rounded overflow-hidden border">
+                    <img src={it.image} alt={it.name} className="w-full h-20 object-cover group-hover:scale-105 transition-transform" />
+                    <div className="p-1 text-xs">{it.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label className="text-sm">Filter color</label>
+          <select value={filter.color} onChange={(e) => setFilter((f) => ({ ...f, color: e.target.value }))} className="border rounded px-2 py-1">
+            {uniqueColors.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-sm">Filter style</label>
+          <select value={filter.style} onChange={(e) => setFilter((f) => ({ ...f, style: e.target.value }))} className="border rounded px-2 py-1">
+            {uniqueStyles.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+        <div className="text-sm text-gray-500 ml-auto">Tip: Lock items you like, then press Randomize to change the rest.</div>
+      </section>
+
+      <section>
+        <h3 className="font-semibold mb-2">Saved Outfits</h3>
+        {saved.length === 0 ? (
+          <div className="text-gray-500">No saved outfits yet.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {saved.map((o) => (
+              <div key={o.id} className="p-3 rounded border flex items-center gap-3">
+                <div className="flex gap-2">
+                  {KINDS.map((k) => (
+                    <img key={k} src={o.items[k]?.image} alt={o.items[k]?.name} className="w-16 h-16 object-cover rounded" />
+                  ))}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium">{o.name}</div>
+                  <div className="text-xs text-gray-500">Saved at {new Date(o.id).toLocaleString()}</div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <button onClick={() => { setSelected(o.items); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="px-3 py-1 rounded border text-sm">Load</button>
+                  <button onClick={() => removeSaved(o.id)} className="px-3 py-1 rounded text-sm bg-red-50 text-red-600">Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <footer className="text-xs text-gray-500">Built with ❤️ — customize the library array to add your own images and items.</footer>
+    </div>
+  );
 }
-</script>
-</body>
-</html>
