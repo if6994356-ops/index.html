@@ -1,143 +1,42 @@
-<!doctype html>
-<html lang="id">
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Kuis IPA Estetik</title>
-<style>
-  body{
-    margin:0;
-    font-family: "Poppins", sans-serif;
-    background: linear-gradient(135deg,#f9e7ff,#d6e4ff,#ffe9d6);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-  }
-  .card{
-    width:90%;
-    max-width:600px;
-    background:rgba(255,255,255,0.4);
-    backdrop-filter:blur(12px);
-    padding:25px;
-    border-radius:20px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.15);
-    text-align:center;
-  }
-  button{
-    padding:12px 20px;
-    margin:8px 0;
-    border:none;
-    border-radius:12px;
-    cursor:pointer;
-    font-size:16px;
-    background:#ffffffaa;
-  }
-  .answer-btn:hover{
-    transform:scale(1.05);
-    background:#fff;
-  }
-  #result, #chartContainer{display:none;}
-  canvas{margin-top:20px;}
-</style>
+    <title>Tes Zodiak</title>
 </head>
 <body>
-<div class="card">
-  <h2 style="margin-top:0;">Kuis IPA Estetik</h2>
-  <button id="startBtn">Mulai Kuis</button>
-  <div id="quizBox" style="display:none;"></div>
-  <div id="result"></div>
-  <div id="chartContainer"><canvas id="chart"></canvas></div>
-</div>
+    <h2>Tes Zodiak</h2>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-// Suara klik, benar, salah + suara akhir
-const clickSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_9ef0e5d8c6.mp3?filename=click-124467.mp3");
-const correctSound = new Audio("https://cdn.pixabay.com/download/audio/2021/08/04/audio_c76feadfde.mp3?filename=correct-2-46134.mp3");
-const wrongSound = new Audio("https://cdn.pixabay.com/download/audio/2022/10/26/audio_843f3a0ab1.mp3?filename=wrong-answer-126503.mp3");
-const finishSound = new Audio("https://cdn.pixabay.com/download/audio/2021/09/20/audio_c9e27320f5.mp3?filename=success-1-6297.mp3");
+    <label>Tanggal: </label>
+    <input type="number" id="day" min="1" max="31"><br><br>
 
-// Daftar pertanyaan
-const questions = [
-  {q:"Apa satuan SI untuk massa?", a:["Meter","Kilogram","Liter","Newton"], c:1, e:"Kilogram adalah satuan SI untuk massa."},
-  {q:"Planet terdekat dari Matahari adalah?", a:["Venus","Mars","Merkurius","Bumi"], c:2, e:"Merkurius adalah planet yang paling dekat dengan Matahari."},
-  {q:"Bagian tumbuhan yang bertugas melakukan fotosintesis?", a:["Akar","Batang","Daun","Bunga"], c:2, e:"Daun memiliki klorofil untuk fotosintesis."},
-  {q:"Zat yang dibutuhkan tumbuhan untuk fotosintesis adalah?", a:["CO₂","O₂","Hidrogen","Nitrogen"], c:0, e:"Fotosintesis memerlukan CO₂."},
-  {q:"Alat untuk mengukur suhu adalah?", a:["Barometer","Termometer","Higrometer","Anemometer"], c:1, e:"Termometer digunakan untuk mengukur suhu."},
-  {q:"Gaya yang memperlambat gerak benda disebut?", a:["Gaya Dorong","Gaya Gesek","Gaya Magnet","Gaya Gravitasi"], c:1, e:"Gaya gesek memperlambat gerak benda."},
-  {q:"Bagian mata yang berfungsi mengatur banyaknya cahaya?", a:["Kornea","Lensa","Retina","Iris"], c:3, e:"Iris mengatur besar kecilnya pupil."},
-  {q:"Hewan yang berkembang biak dengan bertelur disebut?", a:["Vivipar","Ovovivipar","Ovipar","Amfibi"], c:2, e:"Ovipar adalah hewan bertelur."},
-  {q:"Gas yang paling banyak di atmosfer adalah?", a:["Oksigen","Hidrogen","Nitrogen","Helium"], c:2, e:"Nitrogen menyusun sekitar 78% udara."},
-  {q:"Sumber energi utama bagi Bumi adalah?", a:["Bulan","Matahari","Bintang lain","Api"], c:1, e:"Matahari adalah sumber energi utama."},
-  {q:"Air berubah menjadi uap disebut?", a:["Kondensasi","Evaporasi","Sublimasi","Presipitasi"], c:1, e:"Evaporasi adalah penguapan."},
-  {q:"Bagian sel yang mengatur semua kegiatan sel?", a:["Sitoplasma","Mitokondria","Nukleus","Ribosom"], c:2, e:"Nukleus adalah pusat kendali sel."},
-  {q:"Gigi taring berfungsi untuk?", a:["Mengunyah","Mengoyak","Menghaluskan","Menelan"], c:1, e:"Gigi taring digunakan untuk mengoyak."},
-  {q:"Benda yang dapat ditarik magnet adalah?", a:["Aluminium","Kayu","Plastik","Besi"], c:3, e:"Besi bersifat feromagnetik."},
-  {q:"Bunyi merambat paling cepat melalui?", a:["Udara","Besi","Air","Hampa udara"], c:1, e:"Bunyi merambat lebih cepat di benda padat."},
-  {q:"Ular bergerak dengan cara?", a:["Melompat","Berjalan","Melata","Terbang"], c:2, e:"Ular melata dengan otot tubuhnya."},
-  {q:"Organ penyusun sistem pernapasan adalah?", a:["Jantung","Paru-paru","Hati","Ginjal"], c:1, e:"Paru-paru berfungsi untuk bernapas."},
-  {q:"Bumi berotasi dalam waktu?", a:["12 jam","24 jam","30 jam","365 hari"], c:1, e:"Rotasi Bumi memakan waktu 24 jam."},
-  {q:"Urutan planet dari yang terbesar?", a:["Jupiter","Saturnus","Uranus","Neptunus"], c:0, e:"Jupiter adalah planet terbesar."},
-  {q:"Sifat cahaya adalah?", a:["Membengkok","Merambat lurus","Memutar","Diam"], c:1, e:"Cahaya merambat lurus."}
-];
+    <label>Bulan: </label>
+    <input type="number" id="month" min="1" max="12"><br><br>
 
-let index=0, correct=0, wrong=0;
-let explanations=[];
+    <button onclick="checkZodiac()">Cek Zodiak</button>
 
-startBtn.onclick=()=>{
-  clickSound.play();
-  startBtn.style.display="none";
-  quizBox.style.display="block";
-  loadQuestion();
-}
+    <p id="result"></p>
 
-function loadQuestion(){
-  const q=questions[index];
-  quizBox.innerHTML = `<h3>${q.q}</h3>` + q.a.map((opt,i)=>`
-    <button class='answer-btn' onclick='checkAnswer(${i})'>${opt}</button>`).join(" ");
-}
+    <script>
+        function checkZodiac() {
+            let day = parseInt(document.getElementById("day").value);
+            let month = parseInt(document.getElementById("month").value);
+            let zodiac = "";
 
-function checkAnswer(i){
-  clickSound.play();
-  const q=questions[index];
-  if(i===q.c){
-    correct++;
-    correctSound.play();
-    document.body.style.animation="correctFlash 0.5s";
-  } else{
-    wrong++;
-    wrongSound.play();
-    document.body.style.animation="wrongFlash 0.5s";
-  }
+            if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) zodiac = "Capricorn";
+            else if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) zodiac = "Aquarius";
+            else if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) zodiac = "Pisces";
+            else if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) zodiac = "Aries";
+            else if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) zodiac = "Taurus";
+            else if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) zodiac = "Gemini";
+            else if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) zodiac = "Cancer";
+            else if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) zodiac = "Leo";
+            else if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) zodiac = "Virgo";
+            else if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) zodiac = "Libra";
+            else if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) zodiac = "Scorpio";
+            else if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) zodiac = "Sagittarius";
 
-  explanations.push(`<p><b>${q.q}</b><br>Jawaban benar: ${q.a[q.c]}<br>${q.e}</p>`);
-
-  index++;
-  if(index<questions.length) setTimeout(loadQuestion,600);
-  else finishQuiz();
-}
-
-function finishQuiz(){
-  finishSound.play();
-  quizBox.style.display="none";
-  result.style.display="block";
-  result.innerHTML = `<h3>Hasil Kuis</h3>
-    <p>Benar: ${correct}</p>
-    <p>Salah: ${wrong}</p>
-    <h4>Penjelasan Lengkap:</h4>${explanations.join("")}`;
-
-  chartContainer.style.display="block";
-  new Chart(document.getElementById('chart'),{
-    type:'pie',
-    data:{labels:['Benar','Salah'], datasets:[{data:[correct,wrong]}]},
-  });
-}
-</script>
-
-<style>
-@keyframes correctFlash{0%{background:#c8ffdf;}100%{background:linear-gradient(135deg,#f9e7ff,#d6e4ff,#ffe9d6);} }
-@keyframes wrongFlash{0%{background:#ffd1d1;}100%{background:linear-gradient(135deg,#f9e7ff,#d6e4ff,#ffe9d6);} }
-</style>
+            document.getElementById("result").innerText = "Zodiak kamu adalah: " + zodiac;
+        }
+    </script>
 </body>
 </html>
