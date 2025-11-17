@@ -1,90 +1,136 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kuis IPA Estetik</title>
+<style>
+  body{
+    margin:0;
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg,#f9e7ff,#d6e4ff,#ffe9d6);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+  }
+  .card{
+    width:90%;
+    max-width:600px;
+    background:rgba(255,255,255,0.4);
+    backdrop-filter:blur(12px);
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+    text-align:center;
+  }
+  button{
+    padding:12px 20px;
+    margin:8px 0;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:16px;
+    background:#ffffffaa;
+  }
+  .answer-btn:hover{
+    transform:scale(1.05);
+    background:#fff;
+  }
+  #result, #chartContainer{display:none;}
+  canvas{margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2 style="margin-top:0;">Kuis IPA Estetik</h2>
+  <button id="startBtn">Mulai Kuis</button>
+  <div id="quizBox" style="display:none;"></div>
+  <div id="result"></div>
+  <div id="chartContainer"><canvas id="chart"></canvas></div>
+</div>
 
-export default function QuizIPA() {
-  const questions = [
-    {
-      q: "Apa fungsi utama klorofil pada tumbuhan?",
-      options: [
-        "Mengangkut air",
-        "Menyerap cahaya untuk fotosintesis",
-        "Melindungi dari hama",
-        "Menyimpan cadangan makanan",
-      ],
-      answer: 1,
-    },
-    {
-      q: "Planet manakah yang dikenal sebagai 'Planet Merah'?",
-      options: ["Venus", "Mars", "Jupiter", "Saturnus"],
-      answer: 1,
-    },
-    {
-      q: "Gaya diukur menggunakan satuan...",
-      options: ["Joule", "Newton", "Watt", "Ohm"],
-      answer: 1,
-    },
-  ];
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const clickSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_9ef0e5d8c6.mp3?filename=click-124467.mp3");
+const correctSound = new Audio("https://cdn.pixabay.com/download/audio/2021/08/04/audio_c76feadfde.mp3?filename=correct-2-46134.mp3");
+const wrongSound = new Audio("https://cdn.pixabay.com/download/audio/2022/10/26/audio_843f3a0ab1.mp3?filename=wrong-answer-126503.mp3");
 
-  const [index, setIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [finished, setFinished] = useState(false);
+const questions = [
+  {q:"Apa satuan SI untuk massa?", a:["Meter","Kilogram","Liter","Newton"], c:1, e:"Kilogram adalah satuan SI untuk massa."},
+  {q:"Planet terdekat dari Matahari adalah?", a:["Venus","Mars","Merkurius","Bumi"], c:2, e:"Merkurius adalah planet yang paling dekat dengan Matahari."},
+  {q:"Bagian tumbuhan yang bertugas melakukan fotosintesis?", a:["Akar","Batang","Daun","Bunga"], c:2, e:"Daun memiliki klorofil untuk fotosintesis."},
+  {q:"Zat yang dibutuhkan tumbuhan untuk fotosintesis adalah?", a:["CO₂","O₂","Hidrogen","Nitrogen"], c:0, e:"Fotosintesis memerlukan CO₂."},
+  {q:"Alat untuk mengukur suhu adalah?", a:["Barometer","Termometer","Higrometer","Anemometer"], c:1, e:"Termometer digunakan untuk mengukur suhu."},
+  {q:"Gaya yang memperlambat gerak benda disebut?", a:["Gaya Dorong","Gaya Gesek","Gaya Magnet","Gaya Gravitasi"], c:1, e:"Gaya gesek memperlambat gerak benda."},
+  {q:"Bagian mata yang berfungsi mengatur banyaknya cahaya?", a:["Kornea","Lensa","Retina","Iris"], c:3, e:"Iris mengatur besar kecilnya pupil."},
+  {q:"Hewan yang berkembang biak dengan bertelur disebut?", a:["Vivipar","Ovovivipar","Ovipar","Amfibi"], c:2, e:"Ovipar adalah hewan bertelur."},
+  {q:"Gas yang paling banyak di atmosfer adalah?", a:["Oksigen","Hidrogen","Nitrogen","Helium"], c:2, e:"Nitrogen menyusun sekitar 78% udara."},
+  {q:"Sumber energi utama bagi Bumi adalah?", a:["Bulan","Matahari","Bintang lain","Api"], c:1, e:"Matahari adalah sumber energi utama."},
+  {q:"Air berubah menjadi uap disebut?", a:["Kondensasi","Evaporasi","Sublimasi","Presipitasi"], c:1, e:"Evaporasi adalah penguapan."},
+  {q:"Bagian sel yang mengatur semua kegiatan sel?", a:["Sitoplasma","Mitokondria","Nukleus","Ribosom"], c:2, e:"Nukleus adalah pusat kendali sel."},
+  {q:"Gigi taring berfungsi untuk?", a:["Mengunyah","Mengoyak","Menghaluskan","Menelan"], c:1, e:"Gigi taring digunakan untuk mengoyak."},
+  {q:"Benda yang dapat ditarik magnet adalah?", a:["Aluminium","Kayu","Plastik","Besi"], c:3, e:"Besi bersifat feromagnetik."},
+  {q:"Bunyi merambat paling cepat melalui?", a:["Udara","Besi","Air","Hampa udara"], c:1, e:"Bunyi merambat lebih cepat di benda padat."},
+  {q:"Ular bergerak dengan cara?", a:["Melompat","Berjalan","Melata","Terbang"], c:2, e:"Ular melata dengan otot tubuhnya."},
+  {q:"Organ penyusun sistem pernapasan adalah?", a:["Jantung","Paru-paru","Hati","Ginjal"], c:1, e:"Paru-paru berfungsi untuk bernapas."},
+  {q:"Bumi berotasi dalam waktu?", a:["12 jam","24 jam","30 jam","365 hari"], c:1, e:"Rotasi Bumi memakan waktu 24 jam."},
+  {q:"Urutan planet dari yang terbesar?", a:["Jupiter","Saturnus","Uranus","Neptunus"], c:0, e:"Jupiter adalah planet terbesar."},
+  {q:"Sifat cahaya adalah?", a:["Membengkok","Merambat lurus","Memutar","Diam"], c:1, e:"Cahaya merambat lurus."}
+];
 
-  const handleAnswer = (i) => {
-    if (i === questions[index].answer) setScore(score + 1);
-    if (index + 1 < questions.length) setIndex(index + 1);
-    else setFinished(true);
-  };
+let index=0, correct=0, wrong=0;
+let explanations=[];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 flex items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-xl"
-      >
-        <Card className="rounded-2xl shadow-xl bg-white/60 backdrop-blur p-4">
-          <CardContent>
-            {!finished ? (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-center">Kuis IPA Estetik</h1>
-                <p className="text-lg font-medium">{questions[index].q}</p>
-                <div className="grid gap-3">
-                  {questions[index].options.map((opt, i) => (
-                    <motion.div whileTap={{ scale: 0.95 }} key={i}>
-                      <Button
-                        className="w-full rounded-xl p-4 text-base shadow"
-                        onClick={() => handleAnswer(i)}
-                      >
-                        {opt}
-                      </Button>
-                    </motion.div>
-                  ))}
-                </div>
-                <p className="text-center text-sm opacity-70">
-                  Pertanyaan {index + 1} dari {questions.length}
-                </p>
-              </div>
-            ) : (
-              <div className="text-center space-y-6">
-                <h1 className="text-2xl font-bold">Kuis Selesai!</h1>
-                <p className="text-xl font-semibold">Skor Anda: {score}</p>
-                <Button
-                  className="rounded-xl p-4 text-base shadow"
-                  onClick={() => {
-                    setIndex(0);
-                    setScore(0);
-                    setFinished(false);
-                  }}
-                >
-                  Main Lagi
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-    </div>
-  );
+startBtn.onclick=()=>{
+  clickSound.play();
+  startBtn.style.display="none";
+  quizBox.style.display="block";
+  loadQuestion();
 }
+
+function loadQuestion(){
+  const q=questions[index];
+  quizBox.innerHTML = `<h3>${q.q}</h3>` + q.a.map((opt,i)=>`
+    <button class='answer-btn' onclick='checkAnswer(${i})'>${opt}</button>`).join(" ");
+}
+
+function checkAnswer(i){
+  clickSound.play();
+  const q=questions[index];
+  if(i===q.c){
+    correct++;
+    correctSound.play();
+    document.body.style.animation="correctFlash 0.5s";
+  } else{
+    wrong++;
+    wrongSound.play();
+    document.body.style.animation="wrongFlash 0.5s";
+  }
+  explanations.push(`<p><b>${q.q}</b><br>Jawaban benar: ${q.a[q.c]}<br>${q.e}</p>`);
+  index++;
+  if(index<questions.length) setTimeout(loadQuestion,600);
+  else finishQuiz();
+}
+
+function finishQuiz(){
+  quizBox.style.display="none";
+  result.style.display="block";
+  result.innerHTML = `<h3>Hasil Kuis</h3>
+    <p>Benar: ${correct}</p>
+    <p>Salah: ${wrong}</p>
+    <h4>Penjelasan:</h4>${explanations.join("")}`;
+
+  chartContainer.style.display="block";
+  new Chart(document.getElementById('chart'),{
+    type:'pie',
+    data:{labels:['Benar','Salah'], datasets:[{data:[correct,wrong]}]},
+  });
+}
+</script>
+<style>
+@keyframes correctFlash{0%{background:#c8ffdf;}100%{background:linear-gradient(135deg,#f9e7ff,#d6e4ff,#ffe9d6);} }
+@keyframes wrongFlash{0%{background:#ffd1d1;}100%{background:linear-gradient(135deg,#f9e7ff,#d6e4ff,#ffe9d6);} }
+</style>
+</body>
+</html>
