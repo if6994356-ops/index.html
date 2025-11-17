@@ -52,10 +52,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// Suara klik, benar, salah + suara akhir
 const clickSound = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_9ef0e5d8c6.mp3?filename=click-124467.mp3");
 const correctSound = new Audio("https://cdn.pixabay.com/download/audio/2021/08/04/audio_c76feadfde.mp3?filename=correct-2-46134.mp3");
 const wrongSound = new Audio("https://cdn.pixabay.com/download/audio/2022/10/26/audio_843f3a0ab1.mp3?filename=wrong-answer-126503.mp3");
+const finishSound = new Audio("https://cdn.pixabay.com/download/audio/2021/09/20/audio_c9e27320f5.mp3?filename=success-1-6297.mp3");
 
+// Daftar pertanyaan
 const questions = [
   {q:"Apa satuan SI untuk massa?", a:["Meter","Kilogram","Liter","Newton"], c:1, e:"Kilogram adalah satuan SI untuk massa."},
   {q:"Planet terdekat dari Matahari adalah?", a:["Venus","Mars","Merkurius","Bumi"], c:2, e:"Merkurius adalah planet yang paling dekat dengan Matahari."},
@@ -107,19 +110,22 @@ function checkAnswer(i){
     wrongSound.play();
     document.body.style.animation="wrongFlash 0.5s";
   }
+
   explanations.push(`<p><b>${q.q}</b><br>Jawaban benar: ${q.a[q.c]}<br>${q.e}</p>`);
+
   index++;
   if(index<questions.length) setTimeout(loadQuestion,600);
   else finishQuiz();
 }
 
 function finishQuiz(){
+  finishSound.play();
   quizBox.style.display="none";
   result.style.display="block";
   result.innerHTML = `<h3>Hasil Kuis</h3>
     <p>Benar: ${correct}</p>
     <p>Salah: ${wrong}</p>
-    <h4>Penjelasan:</h4>${explanations.join("")}`;
+    <h4>Penjelasan Lengkap:</h4>${explanations.join("")}`;
 
   chartContainer.style.display="block";
   new Chart(document.getElementById('chart'),{
@@ -128,6 +134,7 @@ function finishQuiz(){
   });
 }
 </script>
+
 <style>
 @keyframes correctFlash{0%{background:#c8ffdf;}100%{background:linear-gradient(135deg,#f9e7ff,#d6e4ff,#ffe9d6);} }
 @keyframes wrongFlash{0%{background:#ffd1d1;}100%{background:linear-gradient(135deg,#f9e7ff,#d6e4ff,#ffe9d6);} }
