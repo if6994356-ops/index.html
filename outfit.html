@@ -1,400 +1,90 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
-// MiniTasks — To-Do List Super Simple
-// Single-file React component suitable for a small app or embedding in a page.
-// - No login (localStorage)
-// - Sticky-note style notes
-// - Homescreen "Widget" (compact view)
-// - Colorful Gen Z theme (pastel + neon accents)
-// - Drag to reorder, double-click to edit
-// - Export / Import JSON
+export default function QuizIPA() {
+  const questions = [
+    {
+      q: "Apa fungsi utama klorofil pada tumbuhan?",
+      options: [
+        "Mengangkut air",
+        "Menyerap cahaya untuk fotosintesis",
+        "Melindungi dari hama",
+        "Menyimpan cadangan makanan",
+      ],
+      answer: 1,
+    },
+    {
+      q: "Planet manakah yang dikenal sebagai 'Planet Merah'?",
+      options: ["Venus", "Mars", "Jupiter", "Saturnus"],
+      answer: 1,
+    },
+    {
+      q: "Gaya diukur menggunakan satuan...",
+      options: ["Joule", "Newton", "Watt", "Ohm"],
+      answer: 1,
+    },
+  ];
 
-// Usage: import MiniTasks from './MiniTasks.jsx' and render <MiniTasks />
+  const [index, setIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [finished, setFinished] = useState(false);
 
-const STORAGE_KEY = "minitasks_v1";
-
-const GENZ_PALETTE = [
-  "from-[#FFD6E0] to-[#FFEBB8]", // pink -> pale yellow
-  "from-[#C8FFD4] to-[#D0F0FF]", // mint -> baby blue
-  "from-[#FDE2FF] to-[#E6F7FF]", // lavender -> ice
-  "from-[#FFF7CC] to-[#FFDFE4]", // cream -> coral
-  "from-[#E0F7FF] to-[#EDE7FF]",
-];
-
-function uid() {
-  return Math.random().toString(36).slice(2, 9);
-}
-
-function saveToStorage(notes) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-}
-
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    console.error("Failed to parse storage:", e);
-    return null;
-  }
-}
-
-export default function MiniTasks() {
-  const [notes, setNotes] = useState(() => {
-    const loaded = loadFromStorage();
-    if (loaded && Array.isArray(loaded)) return loaded;
-    // starter sample notes
-    return [
-      {
-        id: uid(),
-        title: "Belanja pagi",
-        body: "Telur, roti gandum, susu almond.",
-        colorIdx: 0,
-        pinned: true,
-        createdAt: Date.now(),
-      },
-      {
-        id: uid(),
-        title: "Ide konten",
-        body: "TikTok: 30s tips produktivitas.",
-        colorIdx: 1,
-        pinned: false,
-        createdAt: Date.now(),
-      },
-    ];
-  });
-
-  const [query, setQuery] = useState("");
-  const [editing, setEditing] = useState(null); // note id or null
-  const [isWidgetOpen, setIsWidgetOpen] = useState(false);
-  const [compactMode, setCompactMode] = useState(false);
-  const dragIdRef = useRef(null);
-
-  useEffect(() => {
-    saveToStorage(notes);
-  }, [notes]);
-
-  function addNote({ title = "", body = "", colorIdx = 0 } = {}) {
-    const n = {
-      id: uid(),
-      title,
-      body,
-      colorIdx,
-      pinned: false,
-      createdAt: Date.now(),
-    };
-    setNotes((s) => [n, ...s]);
-    setEditing(n.id);
-  }
-
-  function updateNote(id, patch) {
-    setNotes((s) => s.map((n) => (n.id === id ? { ...n, ...patch } : n)));
-  }
-
-  function removeNote(id) {
-    setNotes((s) => s.filter((n) => n.id !== id));
-  }
-
-  function togglePin(id) {
-    setNotes((s) =>
-      s
-        .map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n))
-        .sort((a, b) => (b.pinned - a.pinned) || (b.createdAt - a.createdAt))
-    );
-  }
-
-  function onDragStart(e, id) {
-    dragIdRef.current = id;
-    e.dataTransfer.effectAllowed = "move";
-  }
-
-  function onDragOver(e, overId) {
-    e.preventDefault();
-    const dragId = dragIdRef.current;
-    if (!dragId || dragId === overId) return;
-    setNotes((s) => {
-      const arr = [...s];
-      const i = arr.findIndex((x) => x.id === dragId);
-      const j = arr.findIndex((x) => x.id === overId);
-      if (i === -1 || j === -1) return s;
-      const [item] = arr.splice(i, 1);
-      arr.splice(j, 0, item);
-      return arr;
-    });
-  }
-
-  function onDragEnd() {
-    dragIdRef.current = null;
-  }
-
-  function exportJSON() {
-    const blob = new Blob([JSON.stringify(notes, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "minitasks-export.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function importJSON(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const parsed = JSON.parse(e.target.result);
-        if (!Array.isArray(parsed)) throw new Error("File format not recognized");
-        // basic validation
-        const clean = parsed.map((p) => ({
-          id: p.id || uid(),
-          title: p.title || "",
-          body: p.body || "",
-          colorIdx: typeof p.colorIdx === "number" ? p.colorIdx % GENZ_PALETTE.length : 0,
-          pinned: !!p.pinned,
-          createdAt: p.createdAt || Date.now(),
-        }));
-        setNotes(clean.concat(notes));
-        alert("Import sukses — catatan ditambahkan ke daftar Anda.");
-      } catch (err) {
-        alert("Gagal impor: " + err.message);
-      }
-    };
-    reader.readAsText(file);
-  }
-
-  const filtered = notes.filter((n) => {
-    const text = (n.title + " " + n.body).toLowerCase();
-    return text.includes(query.toLowerCase());
-  });
+  const handleAnswer = (i) => {
+    if (i === questions[index].answer) setScore(score + 1);
+    if (index + 1 < questions.length) setIndex(index + 1);
+    else setFinished(true);
+  };
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-b from-white via-[#FFF6F9] to-white">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">MiniTasks</h1>
-            <p className="text-sm opacity-80">To‑Do cepat ala sticky notes — tanpa login, penuh warna ✨</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              className="px-3 py-2 rounded-2xl bg-gradient-to-r from-pink-400 to-yellow-300 text-white font-semibold shadow-md"
-              onClick={() => addNote({ title: "Catatan baru", body: "" })}
-            >
-              + Tambah
-            </button>
-            <button
-              className="px-3 py-2 rounded-2xl border border-gray-200 text-sm"
-              onClick={() => setIsWidgetOpen((s) => !s)}
-            >
-              {isWidgetOpen ? "Tutup Widget" : "Buka Widget"}
-            </button>
-            <button
-              className="px-3 py-2 rounded-2xl border border-gray-200 text-sm"
-              onClick={() => { setCompactMode((c)=>!c) }}
-              title="Toggle compact display"
-            >
-              {compactMode ? "Full" : "Compact"}
-            </button>
-            <div className="relative">
-              <input
-                className="px-3 py-2 rounded-2xl border border-gray-200 text-sm"
-                placeholder="Cari..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
-          </div>
-        </header>
-
-        {/* Widget */}
-        {isWidgetOpen && (
-          <div className="mb-4">
-            <Widget
-              notes={notes}
-              onOpenNote={(id) => { setEditing(id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            />
-          </div>
-        )}
-
-        <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.length === 0 && (
-            <div className="col-span-full p-6 rounded-2xl bg-white shadow-sm text-center opacity-80">
-              <p>Tidak ada catatan. Klik "Tambah" untuk memulai.</p>
-            </div>
-          )}
-
-          {filtered.map((note) => (
-            <div
-              key={note.id}
-              draggable
-              onDragStart={(e) => onDragStart(e, note.id)}
-              onDragOver={(e) => onDragOver(e, note.id)}
-              onDragEnd={onDragEnd}
-              className={`p-4 rounded-2xl shadow-lg cursor-grab select-none transition-transform transform hover:-translate-y-1`}>
-
-              <div className={`rounded-xl p-3 bg-gradient-to-br ${GENZ_PALETTE[note.colorIdx % GENZ_PALETTE.length]} relative`}>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="font-bold text-lg break-words">{note.title || <em>Tanpa judul</em>}</h3>
-                    <p className={`mt-2 text-sm whitespace-pre-wrap break-words ${compactMode ? 'line-clamp-3' : ''}`}>{note.body || <em>Ketik untuk menambahkan detail...</em>}</p>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-2">
-                    <button
-                      className={`px-2 py-1 rounded-full text-xs border ${note.pinned ? 'bg-white/80' : 'bg-white/60'}`}
-                      onClick={() => togglePin(note.id)}
-                      title="Pin"
-                    >
-                      {note.pinned ? '📌' : '📍'}
-                    </button>
-
-                    <div className="flex flex-col gap-1">
-                      <button
-                        className="text-xs px-2 py-1 rounded-full bg-white/70"
-                        onClick={() => setEditing(note.id)}
-                        title="Edit (double-click juga)"
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 flex items-center justify-center p-6">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-xl"
+      >
+        <Card className="rounded-2xl shadow-xl bg-white/60 backdrop-blur p-4">
+          <CardContent>
+            {!finished ? (
+              <div className="space-y-6">
+                <h1 className="text-2xl font-bold text-center">Kuis IPA Estetik</h1>
+                <p className="text-lg font-medium">{questions[index].q}</p>
+                <div className="grid gap-3">
+                  {questions[index].options.map((opt, i) => (
+                    <motion.div whileTap={{ scale: 0.95 }} key={i}>
+                      <Button
+                        className="w-full rounded-xl p-4 text-base shadow"
+                        onClick={() => handleAnswer(i)}
                       >
-                        ✏️
-                      </button>
-                      <button
-                        className="text-xs px-2 py-1 rounded-full bg-white/60"
-                        onClick={() => { if (confirm('Hapus catatan ini?')) removeNote(note.id); }}
-                        title="Hapus"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 text-[0.7rem] opacity-80 flex justify-between items-center">
-                  <div>#{note.id.slice(0,4)}</div>
-                  <div>{new Date(note.createdAt).toLocaleString()}</div>
-                </div>
-
-                {/* quick color swatches */}
-                <div className="absolute left-3 -bottom-4 flex gap-1">
-                  {GENZ_PALETTE.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => updateNote(note.id, { colorIdx: i })}
-                      className={`w-6 h-6 rounded-lg border`}>
-                      <div className={`w-full h-full rounded-lg bg-gradient-to-br ${GENZ_PALETTE[i]}`} />
-                    </button>
+                        {opt}
+                      </Button>
+                    </motion.div>
                   ))}
                 </div>
-
-                {/* double-click to edit */}
-                <div
-                  onDoubleClick={() => setEditing(note.id)}
-                  style={{ position: 'absolute', inset: 0 }}
-                />
+                <p className="text-center text-sm opacity-70">
+                  Pertanyaan {index + 1} dari {questions.length}
+                </p>
               </div>
-            </div>
-          ))}
-        </main>
-
-        {/* Utilities */}
-        <footer className="mt-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <label className="text-sm">Import / Export</label>
-            <input
-              type="file"
-              accept="application/json"
-              onChange={(e) => e.target.files?.[0] && importJSON(e.target.files[0])}
-              className="text-sm"
-            />
-            <button className="px-3 py-1 rounded-2xl border text-sm" onClick={exportJSON}>Export JSON</button>
-          </div>
-
-          <div className="text-sm opacity-80">{notes.length} notes • localStorage only</div>
-        </footer>
-      </div>
-
-      {/* Editor modal */}
-      {editing && (
-        <Editor
-          note={notes.find((n) => n.id === editing) || { id: editing, title: '', body: '', colorIdx: 0 }}
-          onSave={(patch) => { updateNote(editing, patch); setEditing(null); }}
-          onCancel={() => setEditing(null)}
-          onDelete={() => { if (confirm('Hapus catatan ini?')) { removeNote(editing); setEditing(null); } }}
-        />
-      )}
-    </div>
-  );
-}
-
-function Editor({ note, onSave, onCancel, onDelete }) {
-  const [title, setTitle] = useState(note.title || "");
-  const [body, setBody] = useState(note.body || "");
-  const [colorIdx, setColorIdx] = useState(note.colorIdx || 0);
-
-  useEffect(() => {
-    setTitle(note.title || "");
-    setBody(note.body || "");
-    setColorIdx(note.colorIdx || 0);
-  }, [note]);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-2xl p-6 rounded-3xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Edit Catatan</h2>
-          <div className="flex gap-2">
-            <button className="px-3 py-1 rounded-2xl border" onClick={() => onCancel()}>Batal</button>
-            <button className="px-3 py-1 rounded-2xl bg-gradient-to-r from-pink-400 to-yellow-300 text-white" onClick={() => onSave({ title, body, colorIdx })}>Simpan</button>
-          </div>
-        </div>
-
-        <input className="w-full mb-3 p-3 rounded-xl border" placeholder="Judul" value={title} onChange={(e)=>setTitle(e.target.value)} />
-        <textarea className="w-full h-40 p-3 rounded-xl border resize-none" placeholder="Detail tugas..." value={body} onChange={(e)=>setBody(e.target.value)} />
-
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <label className="text-sm mr-2">Warna</label>
-            {GENZ_PALETTE.map((p, i) => (
-              <button key={i} onClick={() => setColorIdx(i)} className={`w-8 h-8 rounded-lg border ${i === colorIdx ? 'ring-2 ring-offset-2' : ''}`}>
-                <div className={`w-full h-full rounded-lg bg-gradient-to-br ${p}`} />
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button className="px-3 py-1 rounded-2xl border text-sm" onClick={() => onDelete()}>Hapus</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Widget({ notes, onOpenNote }) {
-  // compact widget: top 3 (pinned first)
-  const top = [...notes].sort((a,b) => (b.pinned - a.pinned) || (b.createdAt - a.createdAt)).slice(0, 3);
-  return (
-    <div className="p-3 rounded-2xl bg-white/90 shadow-md">
-      <div className="flex items-center justify-between mb-2">
-        <strong>MiniTasks Widget</strong>
-        <small className="opacity-80">Quick view</small>
-      </div>
-      <div className="grid grid-cols-1 gap-2">
-        {top.length === 0 && <div className="text-sm opacity-70">(belum ada catatan)</div>}
-        {top.map((n) => (
-          <button key={n.id} className="text-left p-2 rounded-xl border" onClick={() => onOpenNote(n.id)}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${GENZ_PALETTE[n.colorIdx % GENZ_PALETTE.length]}`} />
-                <div className="text-sm font-semibold truncate" style={{maxWidth: 180}}>{n.title || '(tanpa judul)'}</div>
+            ) : (
+              <div className="text-center space-y-6">
+                <h1 className="text-2xl font-bold">Kuis Selesai!</h1>
+                <p className="text-xl font-semibold">Skor Anda: {score}</p>
+                <Button
+                  className="rounded-xl p-4 text-base shadow"
+                  onClick={() => {
+                    setIndex(0);
+                    setScore(0);
+                    setFinished(false);
+                  }}
+                >
+                  Main Lagi
+                </Button>
               </div>
-              <div className="text-xs opacity-70">{n.pinned ? '📌' : ''}</div>
-            </div>
-            <div className="text-xs opacity-70 line-clamp-1">{n.body}</div>
-          </button>
-        ))}
-      </div>
-      <div className="mt-3 text-xs opacity-70">Tip: buka widget untuk edit cepat.</div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
