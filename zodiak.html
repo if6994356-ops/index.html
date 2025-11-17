@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tes Zodiak Pink</title>
+<title>Tes Zodiak Pink - Mode Ganda</title>
 <style>
   body {
     font-family: 'Poppins', sans-serif;
@@ -12,139 +12,122 @@
     text-align: center;
     padding: 40px;
   }
-  h1 {
-    font-size: 2.5rem;
-    color: #ff4fa3;
+  h1 { font-size: 2.5rem; color: #ff4fa3; }
+  .mode-btn {
+    background: #ff77c9;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    margin: 5px;
+    color: white;
   }
+  .active { background: #ff3fa5; }
   .card {
     background: #ffffffcc;
     border-radius: 20px;
     padding: 20px;
-    width: 330px;
-    margin: 0 auto;
-    box-shadow: 0 10px 20px rgba(255, 0, 128, 0.2);
-    transition: transform .3s ease;
+    width: 340px;
+    margin: 20px auto;
+    box-shadow: 0 10px 20px rgba(255, 0, 128, 0.25);
   }
-  .card:hover {
-    transform: scale(1.03);
-  }
-  input {
-    padding: 10px;
+  input, textarea {
+    width: 80%; padding: 10px;
+    margin-top: 10px;
     border-radius: 10px;
     border: 2px solid #ff8ac9;
-    width: 80%;
-    margin-top: 15px;
-    color: #d63384;
   }
-  button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    background: #ff66b3;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: .3s;
-  }
-  button:hover {
-    background: #ff4398;
-  }
-  .result {
-    margin-top: 25px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    opacity: 0;
-    transition: opacity .6s ease;
-  }
-  .show {
-    opacity: 1;
-  }
-  .love {
-    font-size: 1.8rem;
-    animation: pulse 1s infinite alternate;
-  }
-  @keyframes pulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.2); }
-  }
-  /* Surprise pop effect */
-  .pop {
-    animation: pop .5s ease;
-  }
-  @keyframes pop {
-    0% { transform: scale(0.5); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
+  button { padding: 10px 20px; margin-top: 15px; background:#ff66b3; color:white; border:none; border-radius:20px; cursor:pointer; }
+  button:hover { background:#ff3f99; }
+  .result { margin-top:20px; font-size:1.2rem; font-weight:600; opacity:0; transition:opacity .6s ease; }
+  .show { opacity:1; }
+  .love { font-size:1.8rem; animation:pulse 1s infinite alternate; }
+  @keyframes pulse{ from{transform:scale(1);} to{transform:scale(1.2);} }
+  .pop{ animation:pop .5s ease; }
+  @keyframes pop{ 0%{transform:scale(.5);opacity:0;} 100%{transform:scale(1);opacity:1;} }
 </style>
 </head>
 <body>
-  <h1>💗 Tes Zodiak Kamu 💗</h1>
-  <div class="card">
-    <p>Masukkan tanggal lahir kamu</p>
-    <input type="date" id="birth" />
-    <button onclick="cekZodiak()">Cek Zodiak 💕</button>
-    <div id="hasil" class="result"></div>
-  </div>
+<h1>💗 Tes Zodiak Mode Ganda 💗</h1>
+
+<!-- MODE SELECTOR -->
+<button class="mode-btn active" onclick="setMode('tanggal')">Tanggal Lahir 💕</button>
+<button class="mode-btn" onclick="setMode('kepribadian')">Kepribadian 💞</button>
+
+<!-- CARD TANGGAL LAHIR -->
+<div id="modeTanggal" class="card">
+  <p>Masukkan tanggal lahirmu</p>
+  <input type="date" id="birth" />
+  <button onclick="cekZodiakTanggal()">Cek Zodiak 💗</button>
+</div>
+
+<!-- CARD KEPRIBADIAN -->
+<div id="modeKepribadian" class="card" style="display:none;">
+  <p>Deskripsikan sedikit tentang dirimu 💖</p>
+  <textarea id="desc" rows="4" placeholder="Contoh: aku orangnya sensitif dan penyayang..."></textarea>
+  <button onclick="cekZodiakKepribadian()">Tebak Zodiak 💕</button>
+</div>
+
+<div id="hasil" class="result"></div>
 
 <script>
-function cekZodiak() {
-  const birth = document.getElementById('birth').value;
-  if (!birth) {
-    alert('Masukkan tanggal lahirmu dulu yaa 💖');
-    return;
+function setMode(mode){
+  document.querySelectorAll('.mode-btn').forEach(btn=>btn.classList.remove('active'));
+  if(mode==='tanggal'){
+    document.querySelectorAll('.mode-btn')[0].classList.add('active');
+    document.getElementById('modeTanggal').style.display='block';
+    document.getElementById('modeKepribadian').style.display='none';
+  } else {
+    document.querySelectorAll('.mode-btn')[1].classList.add('active');
+    document.getElementById('modeTanggal').style.display='none';
+    document.getElementById('modeKepribadian').style.display='block';
   }
+  document.getElementById('hasil').innerHTML='';
+}
 
-  const date = new Date(birth);
-  const d = date.getDate();
-  const m = date.getMonth() + 1;
+function zodiakFromDate(d,m){
+  if((m===3&&d>=21)||(m===4&&d<=19)) return 'Aries ♈ – Energi & keberanian 💥';
+  if((m===4&&d>=20)||(m===5&&d<=20)) return 'Taurus ♉ – Stabil & penyayang 💗';
+  if((m===5&&d>=21)||(m===6&&d<=20)) return 'Gemini ♊ – Ceria & pintar 😘';
+  if((m===6&&d>=21)||(m===7&&d<=22)) return 'Cancer ♋ – Lembut & penuh cinta 💞';
+  if((m===7&&d>=23)||(m===8&&d<=22)) return 'Leo ♌ – Kharismatik ✨';
+  if((m===8&&d>=23)||(m===9&&d<=22)) return 'Virgo ♍ – Rapi & perhatian 💕';
+  if((m===9&&d>=23)||(m===10&&d<=22)) return 'Libra ♎ – Estetik & romantis 💖';
+  if((m===10&&d>=23)||(m===11&&d<=21)) return 'Scorpio ♏ – Misterius & intens 🔥';
+  if((m===11&&d>=22)||(m===12&&d<=21)) return 'Sagittarius ♐ – Bebas & fun 💘';
+  if((m===12&&d>=22)||(m===1&&d<=19)) return 'Capricorn ♑ – Ambisius 💗';
+  if((m===1&&d>=20)||(m===2&&d<=18)) return 'Aquarius ♒ – Unik & kreatif 💞';
+  return 'Pisces ♓ – Dreamy & penuh cinta 💗';
+}
 
-  let zodiak = '';
-  let personality = '';
+function cekZodiakTanggal(){
+  const val=document.getElementById('birth').value;
+  if(!val) return alert('Isi tanggal lahir dulu yaa 💖');
+  const date=new Date(val);
+  const d=date.getDate();
+  const m=date.getMonth()+1;
+  tampilkan(zodiakFromDate(d,m));
+}
 
-  if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) {
-    zodiak = 'Aries ♈';
-    personality = 'Kamu penuh energi, berani, dan nggak takut tantangan! 💥';
-  } else if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) {
-    zodiak = 'Taurus ♉';
-    personality = 'Stabil, setia, dan suka kenyamanan. Bucin tapi elegan 💗';
-  } else if ((m === 5 && d >= 21) || (m === 6 && d <= 20)) {
-    zodiak = 'Gemini ♊';
-    personality = 'Ceria, pintar, dan gampang bikin orang jatuh hati 😘';
-  } else if ((m === 6 && d >= 21) || (m === 7 && d <= 22)) {
-    zodiak = 'Cancer ♋';
-    personality = 'Lembut, penyayang, dan suka bikin nyaman 💞';
-  } else if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) {
-    zodiak = 'Leo ♌';
-    personality = 'Percaya diri, bersinar, dan penuh kharisma ✨';
-  } else if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) {
-    zodiak = 'Virgo ♍';
-    personality = 'Rapi, pintar, perhatian, dan penuh detail 💕';
-  } else if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) {
-    zodiak = 'Libra ♎';
-    personality = 'Estetik, romantis, dan punya vibes sweet banget 💖';
-  } else if ((m === 10 && d >= 23) || (m === 11 && d <= 21)) {
-    zodiak = 'Scorpio ♏';
-    personality = 'Misterius, intens, dan penuh passion 🔥';
-  } else if ((m === 11 && d >= 22) || (m === 12 && d <= 21)) {
-    zodiak = 'Sagittarius ♐';
-    personality = 'Petualang, bebas, dan selalu fun 💘';
-  } else if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) {
-    zodiak = 'Capricorn ♑';
-    personality = 'Kuat, ambisius, dan dewasa banget 💗';
-  } else if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) {
-    zodiak = 'Aquarius ♒';
-    personality = 'Unik, kreatif, dan punya pikiran beda dari yang lain 💞';
-  } else if ((m === 2 && d >= 19) || (m === 3 && d <= 20)) {
-    zodiak = 'Pisces ♓';
-    personality = 'Lembut, dreamy, dan penuh cinta 💗';
-  }
+function cekZodiakKepribadian(){
+  const text=document.getElementById('desc').value.toLowerCase();
+  if(!text) return alert('Tulis sedikit tentang dirimu dulu 💗');
+  let guess='';
+  if(text.includes('sensitif')||text.includes('penyayang')||text.includes('care')) guess='Cancer ♋ atau Pisces ♓ – vibes lembut 💞';
+  else if(text.includes('pemimpin')||text.includes('percaya diri')) guess='Leo ♌ – kuat & bersinar ✨';
+  else if(text.includes('pemikir')||text.includes('unik')) guess='Aquarius ♒ – original banget 💗';
+  else if(text.includes('detail')||text.includes('rapi')) guess='Virgo ♍ – perfeksionis manis 💕';
+  else if(text.includes('petualang')||text.includes('bebas')) guess='Sagittarius ♐ – fun & eksploratif 💘';
+  else guess='Libra ♎ – sweet & easygoing 💖';
 
-  const hasil = document.getElementById('hasil');
-  hasil.innerHTML = `<div class='love'>💖💗💖</div><br> Zodiak kamu adalah <b>${zodiak}</b><br>${personality}`;
-  hasil.classList.add('show', 'pop');
+  tampilkan(guess);
+}
 
-  setTimeout(() => hasil.classList.remove('pop'), 700);
+function tampilkan(text){
+  const hasil=document.getElementById('hasil');
+  hasil.innerHTML=`<div class='love'>💗💖💗</div><br>${text}`;
+  hasil.classList.add('show','pop');
+  setTimeout(()=>hasil.classList.remove('pop'),700);
 }
 </script>
 </body>
