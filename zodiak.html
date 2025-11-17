@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tes Zodiak & Kepribadian</title>
+<style>
+    body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #ffd4e5, #ff8ac0);
+        text-align: center;
+        padding: 40px;
+        color: #b30059;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        text-shadow: 0 0 10px #fff;
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 25px;
+        border-radius: 25px;
+        width: 330px;
+        margin: 0 auto;
+        box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+    }
+
+    select, button {
+        width: 80%;
+        padding: 12px;
+        border-radius: 15px;
+        margin-top: 15px;
+        border: none;
+        outline: none;
+        font-size: 1rem;
+        background: #ffb3d6;
+        color: #b30059;
+        font-weight: bold;
+        box-shadow: 0 0 10px rgba(255, 0, 128, 0.2);
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #ff8ac0;
+        transform: scale(1.05);
+    }
+
+    .result {
+        margin-top: 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        opacity: 0;
+        transition: 0.6s;
+    }
+
+    /* Love floating animation */
+    .love {
+        position: fixed;
+        color: #ff006e;
+        font-size: 25px;
+        animation: floatUp 2.5s linear forwards;
+        pointer-events: none;
+    }
+
+    @keyframes floatUp {
+        0% { transform: translateY(0); opacity: 1; }
+        100% { transform: translateY(-150px); opacity: 0; }
+    }
+</style>
+</head>
+<body>
+    <h1>✨ Tes Zodiak & Kepribadian 💕</h1>
+
+    <div class="card">
+        <label>Pilih Zodiak Kamu:</label><br>
+        <select id="zodiak">
+            <option value="">-- Pilih --</option>
+            <option>Aries</option>
+            <option>Taurus</option>
+            <option>Gemini</option>
+            <option>Cancer</option>
+            <option>Leo</option>
+            <option>Virgo</option>
+            <option>Libra</option>
+            <option>Scorpio</option>
+            <option>Sagittarius</option>
+            <option>Capricorn</option>
+            <option>Aquarius</option>
+            <option>Pisces</option>
+        </select>
+
+        <button onclick="cekZodiak()">Lihat Kepribadian ✨</button>
+
+        <div id="hasil" class="result"></div>
+    </div>
+
+<script>
+    const data = {
+        "Aries": "Pemberani, penuh energi, dan suka tantangan! ❤️",
+        "Taurus": "Penyabar, setia, dan penyuka kenyamanan. 💕",
+        "Gemini": "Ceria, komunikatif, dan tidak gampang bosan! 💗",
+        "Cancer": "Peka, penyayang, dan punya hati paling lembut. 💞",
+        "Leo": "Percaya diri, karismatik, dan suka jadi pusat perhatian! 💖",
+        "Virgo": "Perfeksionis, cerdas, dan perhatian banget sama detail. 🌸",
+        "Libra": "Romantis, harmonis, dan pecinta keindahan. 💘",
+        "Scorpio": "Misterius, intens, dan sangat setia kalau sudah sayang. 🔥",
+        "Sagittarius": "Petualang, optimis, dan suka kebebasan! ✨",
+        "Capricorn": "Ambisius, disiplin, dan pekerja keras. ⭐",
+        "Aquarius": "Unik, visioner, dan punya pemikiran out of the box! 🌟",
+        "Pisces": "Lembut, artistik, dan romantis banget. 💙"
+    };
+
+    function cekZodiak() {
+        const z = document.getElementById("zodiak").value;
+        const hasil = document.getElementById("hasil");
+
+        if (!z) {
+            hasil.style.opacity = 1;
+            hasil.innerHTML = "Pilih dulu zodiaknya yaa 💗";
+            return;
+        }
+
+        // Surprise effect: delay + floating hearts
+        hasil.style.opacity = 0;
+        setTimeout(() => {
+            hasil.innerHTML = data[z] || "";
+            hasil.style.opacity = 1;
+        }, 500);
+
+        generateLove();
+        setTimeout(generateLove, 500);
+        setTimeout(generateLove, 900);
+    }
+
+    function generateLove() {
+        const love = document.createElement("div");
+        love.className = "love";
+        love.textContent = "💖";
+        love.style.left = Math.random() * window.innerWidth + "px";
+        love.style.top = (window.innerHeight - 30) + "px";
+        document.body.appendChild(love);
+
+        setTimeout(() => love.remove(), 2500);
+    }
+</script>
+
+</body>
+</html>
