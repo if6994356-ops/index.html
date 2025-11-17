@@ -1,76 +1,126 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Cek Zodiak & Kepribadian</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tes Zodiak Estetik</title>
 <style>
-  body{margin:0;font-family:Inter, Arial, sans-serif;background:#0f172a;color:#f1f5f9;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
-  .card{background:#1e293b;padding:28px;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,0.5);max-width:400px;width:100%;text-align:center}
-  h1{margin:0 0 12px;font-size:26px}
-  label{display:block;margin-top:18px;text-align:left;font-size:14px;color:#cbd5e1}
-  input{width:100%;padding:12px;margin-top:6px;border-radius:10px;border:none;background:#334155;color:white;font-size:15px}
-  button{margin-top:20px;padding:12px 16px;border:none;border-radius:12px;background:linear-gradient(90deg,#fb7185,#f472b6);font-size:16px;color:#0f172a;cursor:pointer;font-weight:600;width:100%}
-  button:hover{opacity:0.9}
-  .result{margin-top:24px;padding:18px;background:#0f172a;border-radius:12px;display:none;animation:fade .4s ease}
-  @keyframes fade{from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)}}
+  body{
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    background:linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95);
+    color:white;
+    overflow-x:hidden;
+  }
+  .container{
+    max-width:500px;
+    margin:60px auto;
+    background:rgba(255,255,255,0.1);
+    padding:25px;
+    border-radius:20px;
+    backdrop-filter:blur(10px);
+    box-shadow:0 0 25px rgba(255,255,255,0.15);
+    animation:fadeIn 1.2s ease;
+  }
+  @keyframes fadeIn{
+    from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);}
+  }
+  h1{
+    text-align:center;
+    margin-bottom:20px;
+    font-weight:600;
+  }
+  label{
+    font-size:18px;
+  }
+  input{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    margin:10px 0 20px 0;
+    font-size:16px;
+  }
+  button{
+    width:100%;
+    padding:14px;
+    border:none;
+    background:#a78bfa;
+    color:white;
+    font-size:18px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.3s;
+  }
+  button:hover{
+    background:#c4b5fd;
+    transform:scale(1.03);
+  }
+  .hasil{
+    margin-top:25px;
+    padding:20px;
+    background:rgba(255,255,255,0.15);
+    border-radius:15px;
+    display:none;
+    animation:fadeIn 0.8s ease;
+  }
 </style>
 </head>
 <body>
-<div class="card">
-  <h1>Cek Zodiak & Kepribadian</h1>
 
-  <label>Tanggal Lahir</label>
+<div class="container">
+  <h1>✨ Tes Zodiak Estetik ✨</h1>
+  <label for="tgl">Masukkan Tanggal Lahir:</label>
   <input type="date" id="tgl" />
+  <button onclick="cekZodiak()">Lihat Zodiak</button>
 
-  <button onclick="cekZodiak()">Cek Zodiak</button>
-
-  <div class="result" id="hasil"></div>
+  <div class="hasil" id="hasil"></div>
 </div>
 
+<!-- Efek Suara -->
+<audio id="klikSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_f38ae0ff52.mp3"></audio>
+<audio id="doneSound" src="https://cdn.pixabay.com/audio/2022/03/10/audio_f4c89f9486.mp3"></audio>
+
 <script>
+function playClick(){
+  document.getElementById('klikSound').play();
+}
+function playDone(){
+  document.getElementById('doneSound').play();
+}
+
+document.querySelector('button').addEventListener('click', playClick);
+
 function cekZodiak(){
-  const val = document.getElementById('tgl').value;
-  if(!val){ alert('Masukkan tanggal lahir!'); return; }
-  const tgl = new Date(val);
-  const d = tgl.getDate();
-  const m = tgl.getMonth() + 1;
+  const tgl = document.getElementById("tgl").value;
+  if(!tgl) return;
 
-  let z = '', kepribadian='';
+  const date = new Date(tgl);
+  const d = date.getDate();
+  const m = date.getMonth() + 1;
+  let zodiak = "";
+  let deskripsi = "";
 
-  if((m==3&&d>=21)||(m==4&&d<=19)){
-    z='Aries'; kepribadian='Enerjik, berani, spontan, suka tantangan.';
-  } else if((m==4&&d>=20)||(m==5&&d<=20)){
-    z='Taurus'; kepribadian='Stabil, sabar, estetis, suka kenyamanan dan ketenangan.';
-  } else if((m==5&&d>=21)||(m==6&&d<=20)){
-    z='Gemini'; kepribadian='Cerdas, komunikatif, mudah beradaptasi, suka mencoba hal baru.';
-  } else if((m==6&&d>=21)||(m==7&&d<=22)){
-    z='Cancer'; kepribadian='Empatik, sensitif, perhatian, sangat peduli dengan keluarga.';
-  } else if((m==7&&d>=23)||(m==8&&d<=22)){
-    z='Leo'; kepribadian='Percaya diri, kreatif, karismatik, suka menjadi pusat perhatian positif.';
-  } else if((m==8&&d>=23)||(m==9&&d<=22)){
-    z='Virgo'; kepribadian='Perfeksionis, logis, rapi, dan suka membantu orang lain.';
-  } else if((m==9&&d>=23)||(m==10&&d<=22)){
-    z='Libra'; kepribadian='Harmonis, adil, penuh pesona, dan sangat menghargai kedamaian.';
-  } else if((m==10&&d>=23)||(m==11&&d<=21)){
-    z='Scorpio'; kepribadian='Intens, misterius, passion kuat, dan sangat setia.';
-  } else if((m==11&&d>=22)||(m==12&&d<=21)){
-    z='Sagitarius'; kepribadian='Petualang, optimis, jujur, dan bebas.';
-  } else if((m==12&&d>=22)||(m==1&&d<=19)){
-    z='Capricorn'; kepribadian='Disiplin, ambisius, pekerja keras, suka kestabilan.';
-  } else if((m==1&&d>=20)||(m==2&&d<=18)){
-    z='Aquarius'; kepribadian='Kreatif, unik, visioner, suka kebebasan dan pemikiran luas.';
-  } else if((m==2&&d>=19)||(m==3&&d<=20)){
-    z='Pisces'; kepribadian='Kreatif, intuitif, lembut, penuh imajinasi dan empati.';
-  }
+  if((m==3&&d>=21)||(m==4&&d<=19)){zodiak="Aries";deskripsi="Penuh energi dan semangat baru.";}
+  else if((m==4&&d>=20)||(m==5&&d<=20)){zodiak="Taurus";deskripsi="Tenang, lembut, dan penuh keteguhan hati.";}
+  else if((m==5&&d>=21)||(m==6&&d<=20)){zodiak="Gemini";deskripsi="Cerdas, lincah, dan komunikatif.";}
+  else if((m==6&&d>=21)||(m==7&&d<=22)){zodiak="Cancer";deskripsi="Penyayang, sensitif, dan intuitif.";}
+  else if((m==7&&d>=23)||(m==8&&d<=22)){zodiak="Leo";deskripsi="Penuh pesona, percaya diri, dan hangat.";}
+  else if((m==8&&d>=23)||(m==9&&d<=22)){zodiak="Virgo";deskripsi="Rapi, detail, dan pemikir logis.";}
+  else if((m==9&&d>=23)||(m==10&&d<=22)){zodiak="Libra";deskripsi="Indah, seimbang, dan penuh harmoni.";}
+  else if((m==10&&d>=23)||(m==11&&d<=21)){zodiak="Scorpio";deskripsi="Misterius, kuat, dan penuh intensitas.";}
+  else if((m==11&&d>=22)||(m==12&&d<=21)){zodiak="Sagitarius";deskripsi="Pencari petualangan dan kebebasan.";}
+  else if((m==12&&d>=22)||(m==1&&d<=19)){zodiak="Capricorn";deskripsi="Ambisius, disiplin, dan dewasa.";}
+  else if((m==1&&d>=20)||(m==2&&d<=18)){zodiak="Aquarius";deskripsi="Unik, mandiri, dan penuh ide.";}
+  else if((m==2&&d>=19)||(m==3&&d<=20)){zodiak="Pisces";deskripsi="Lembut, imajinatif, dan penuh empati.";}
 
-  const hasil = document.getElementById('hasil');
-  hasil.style.display='block';
-  hasil.innerHTML = `
-    <h2>${z}</h2>
-    <p>${kepribadian}</p>
-  `;
+  const hasil = document.getElementById("hasil");
+  hasil.style.display = "block";
+  hasil.innerHTML = `<h2>${zodiak}</h2><p>${deskripsi}</p>`;
+
+  playDone();
 }
 </script>
+
 </body>
 </html>
