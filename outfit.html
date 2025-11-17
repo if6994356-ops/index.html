@@ -1,191 +1,400 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
-// Mix & Match Outfit — single-file React component
-// Tailwind CSS assumed available in the project (e.g. Next.js / Vite + Tailwind)
+// MiniTasks — To-Do List Super Simple
+// Single-file React component suitable for a small app or embedding in a page.
+// - No login (localStorage)
+// - Sticky-note style notes
+// - Homescreen "Widget" (compact view)
+// - Colorful Gen Z theme (pastel + neon accents)
+// - Drag to reorder, double-click to edit
+// - Export / Import JSON
 
-const SAMPLE_ITEMS = [
-  // tops
-  { id: "t1", kind: "Top", name: "White Tee", image: "https://images.unsplash.com/photo-1520975665193-0b0ea1b63f4a?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=1", color: "White", style: "Casual" },
-  { id: "t2", kind: "Top", name: "Striped Shirt", image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=2", color: "Blue", style: "Smart Casual" },
-  { id: "t3", kind: "Top", name: "Blouse", image: "https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=3", color: "Pink", style: "Dressy" },
-  // bottoms
-  { id: "b1", kind: "Bottom", name: "Denim Jeans", image: "https://images.unsplash.com/photo-1503342217505-b0a15a0c9a0f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=4", color: "Blue", style: "Casual" },
-  { id: "b2", kind: "Bottom", name: "Black Trousers", image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=5", color: "Black", style: "Smart" },
-  { id: "b3", kind: "Bottom", name: "Skirt", image: "https://images.unsplash.com/photo-1520975698513-4d6b3d7b0f6f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=6", color: "Beige", style: "Dressy" },
-  // shoes
-  { id: "s1", kind: "Shoes", name: "White Sneakers", image: "https://images.unsplash.com/photo-1519744792095-2f2205e87b6f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=7", color: "White", style: "Casual" },
-  { id: "s2", kind: "Shoes", name: "Loafers", image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=8", color: "Brown", style: "Smart" },
-  { id: "s3", kind: "Shoes", name: "Heels", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=9", color: "Black", style: "Dressy" },
-  // accessories
-  { id: "a1", kind: "Accessory", name: "Gold Necklace", image: "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=10", color: "Gold", style: "Dressy" },
-  { id: "a2", kind: "Accessory", name: "Cap", image: "https://images.unsplash.com/photo-1514995669114-2b6fb0a76f5f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=11", color: "Black", style: "Casual" },
-  { id: "a3", kind: "Accessory", name: "Watch", image: "https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=12", color: "Silver", style: "Smart" },
+// Usage: import MiniTasks from './MiniTasks.jsx' and render <MiniTasks />
+
+const STORAGE_KEY = "minitasks_v1";
+
+const GENZ_PALETTE = [
+  "from-[#FFD6E0] to-[#FFEBB8]", // pink -> pale yellow
+  "from-[#C8FFD4] to-[#D0F0FF]", // mint -> baby blue
+  "from-[#FDE2FF] to-[#E6F7FF]", // lavender -> ice
+  "from-[#FFF7CC] to-[#FFDFE4]", // cream -> coral
+  "from-[#E0F7FF] to-[#EDE7FF]",
 ];
 
-const KINDS = ["Top", "Bottom", "Shoes", "Accessory"];
+function uid() {
+  return Math.random().toString(36).slice(2, 9);
+}
 
-export default function MixMatchOutfit() {
-  const [library] = useState(SAMPLE_ITEMS);
-  const [selected, setSelected] = useState({ Top: null, Bottom: null, Shoes: null, Accessory: null });
-  const [locked, setLocked] = useState({ Top: false, Bottom: false, Shoes: false, Accessory: false });
-  const [saved, setSaved] = useState([]);
-  const [filter, setFilter] = useState({ color: "All", style: "All" });
+function saveToStorage(notes) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error("Failed to parse storage:", e);
+    return null;
+  }
+}
+
+export default function MiniTasks() {
+  const [notes, setNotes] = useState(() => {
+    const loaded = loadFromStorage();
+    if (loaded && Array.isArray(loaded)) return loaded;
+    // starter sample notes
+    return [
+      {
+        id: uid(),
+        title: "Belanja pagi",
+        body: "Telur, roti gandum, susu almond.",
+        colorIdx: 0,
+        pinned: true,
+        createdAt: Date.now(),
+      },
+      {
+        id: uid(),
+        title: "Ide konten",
+        body: "TikTok: 30s tips produktivitas.",
+        colorIdx: 1,
+        pinned: false,
+        createdAt: Date.now(),
+      },
+    ];
+  });
+
+  const [query, setQuery] = useState("");
+  const [editing, setEditing] = useState(null); // note id or null
+  const [isWidgetOpen, setIsWidgetOpen] = useState(false);
+  const [compactMode, setCompactMode] = useState(false);
+  const dragIdRef = useRef(null);
 
   useEffect(() => {
-    const loaded = window.localStorage.getItem("mm_saved_outfits");
-    if (loaded) setSaved(JSON.parse(loaded));
-  }, []);
+    saveToStorage(notes);
+  }, [notes]);
 
-  useEffect(() => {
-    window.localStorage.setItem("mm_saved_outfits", JSON.stringify(saved));
-  }, [saved]);
-
-  useEffect(() => {
-    // initialize with a random outfit
-    randomizeAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function pickRandom(kind) {
-    const pool = library.filter((i) => i.kind === kind && (filter.color === "All" || i.color === filter.color) && (filter.style === "All" || i.style === filter.style));
-    if (pool.length === 0) return null;
-    return pool[Math.floor(Math.random() * pool.length)];
+  function addNote({ title = "", body = "", colorIdx = 0 } = {}) {
+    const n = {
+      id: uid(),
+      title,
+      body,
+      colorIdx,
+      pinned: false,
+      createdAt: Date.now(),
+    };
+    setNotes((s) => [n, ...s]);
+    setEditing(n.id);
   }
 
-  function randomizeAll() {
-    const next = { ...selected };
-    KINDS.forEach((k) => {
-      if (!locked[k]) next[k] = pickRandom(k);
+  function updateNote(id, patch) {
+    setNotes((s) => s.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+  }
+
+  function removeNote(id) {
+    setNotes((s) => s.filter((n) => n.id !== id));
+  }
+
+  function togglePin(id) {
+    setNotes((s) =>
+      s
+        .map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n))
+        .sort((a, b) => (b.pinned - a.pinned) || (b.createdAt - a.createdAt))
+    );
+  }
+
+  function onDragStart(e, id) {
+    dragIdRef.current = id;
+    e.dataTransfer.effectAllowed = "move";
+  }
+
+  function onDragOver(e, overId) {
+    e.preventDefault();
+    const dragId = dragIdRef.current;
+    if (!dragId || dragId === overId) return;
+    setNotes((s) => {
+      const arr = [...s];
+      const i = arr.findIndex((x) => x.id === dragId);
+      const j = arr.findIndex((x) => x.id === overId);
+      if (i === -1 || j === -1) return s;
+      const [item] = arr.splice(i, 1);
+      arr.splice(j, 0, item);
+      return arr;
     });
-    setSelected(next);
   }
 
-  function toggleLock(kind) {
-    setLocked((s) => ({ ...s, [kind]: !s[kind] }));
+  function onDragEnd() {
+    dragIdRef.current = null;
   }
 
-  function selectItem(item) {
-    setSelected((s) => ({ ...s, [item.kind]: item }));
-  }
-
-  function saveCurrent(name = null) {
-    const outfit = { id: Date.now(), name: name || `Outfit ${new Date().toLocaleString()}`, items: selected };
-    setSaved((s) => [outfit, ...s]);
-  }
-
-  function removeSaved(id) {
-    setSaved((s) => s.filter((o) => o.id !== id));
-  }
-
-  function exportSaved() {
-    const blob = new Blob([JSON.stringify(saved, null, 2)], { type: "application/json" });
+  function exportJSON() {
+    const blob = new Blob([JSON.stringify(notes, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "saved-outfits.json";
+    a.download = "minitasks-export.json";
     a.click();
     URL.revokeObjectURL(url);
   }
 
-  function itemsByKind(kind) {
-    return library.filter((i) => i.kind === kind && (filter.color === "All" || i.color === filter.color) && (filter.style === "All" || i.style === filter.style));
+  function importJSON(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (!Array.isArray(parsed)) throw new Error("File format not recognized");
+        // basic validation
+        const clean = parsed.map((p) => ({
+          id: p.id || uid(),
+          title: p.title || "",
+          body: p.body || "",
+          colorIdx: typeof p.colorIdx === "number" ? p.colorIdx % GENZ_PALETTE.length : 0,
+          pinned: !!p.pinned,
+          createdAt: p.createdAt || Date.now(),
+        }));
+        setNotes(clean.concat(notes));
+        alert("Import sukses — catatan ditambahkan ke daftar Anda.");
+      } catch (err) {
+        alert("Gagal impor: " + err.message);
+      }
+    };
+    reader.readAsText(file);
   }
 
-  const uniqueColors = ["All", ...Array.from(new Set(library.map((i) => i.color)))];
-  const uniqueStyles = ["All", ...Array.from(new Set(library.map((i) => i.style)))];
+  const filtered = notes.filter((n) => {
+    const text = (n.title + " " + n.body).toLowerCase();
+    return text.includes(query.toLowerCase());
+  });
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Mix & Match Outfit</h1>
-        <div className="flex gap-2">
-          <button onClick={randomizeAll} className="px-3 py-2 rounded bg-gray-800 text-white hover:opacity-90">Randomize</button>
-          <button onClick={() => saveCurrent()} className="px-3 py-2 rounded border">Save</button>
-          <button onClick={exportSaved} className="px-3 py-2 rounded border">Export</button>
-        </div>
-      </header>
+    <div className="min-h-screen p-6 bg-gradient-to-b from-white via-[#FFF6F9] to-white">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <header className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight">MiniTasks</h1>
+            <p className="text-sm opacity-80">To‑Do cepat ala sticky notes — tanpa login, penuh warna ✨</p>
+          </div>
 
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {KINDS.map((k) => (
-          <div key={k} className="bg-white rounded-xl shadow p-4 flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold">{k}</h2>
-              <div className="flex items-center gap-2">
-                <button onClick={() => toggleLock(k)} className={`px-2 py-1 rounded text-sm ${locked[k] ? "bg-yellow-300" : "bg-gray-100"}`}>{locked[k] ? "Locked" : "Lock"}</button>
-              </div>
-            </div>
-
-            <div className="flex-1 flex items-center justify-center">
-              {selected[k] ? (
-                <div className="text-center">
-                  <img src={selected[k].image} alt={selected[k].name} className="w-40 h-40 object-cover rounded-md mx-auto mb-2 shadow" />
-                  <div className="text-sm font-medium">{selected[k].name}</div>
-                  <div className="text-xs text-gray-500">{selected[k].color} • {selected[k].style}</div>
-                </div>
-              ) : (
-                <div className="text-gray-400">No selection</div>
-              )}
-            </div>
-
-            <div className="mt-3">
-              <div className="text-xs text-gray-600 mb-2">Choose from library</div>
-              <div className="grid grid-cols-3 gap-2">
-                {itemsByKind(k).map((it) => (
-                  <button key={it.id} onClick={() => selectItem(it)} className="group rounded overflow-hidden border">
-                    <img src={it.image} alt={it.name} className="w-full h-20 object-cover group-hover:scale-105 transition-transform" />
-                    <div className="p-1 text-xs">{it.name}</div>
-                  </button>
-                ))}
-              </div>
+          <div className="flex items-center gap-2">
+            <button
+              className="px-3 py-2 rounded-2xl bg-gradient-to-r from-pink-400 to-yellow-300 text-white font-semibold shadow-md"
+              onClick={() => addNote({ title: "Catatan baru", body: "" })}
+            >
+              + Tambah
+            </button>
+            <button
+              className="px-3 py-2 rounded-2xl border border-gray-200 text-sm"
+              onClick={() => setIsWidgetOpen((s) => !s)}
+            >
+              {isWidgetOpen ? "Tutup Widget" : "Buka Widget"}
+            </button>
+            <button
+              className="px-3 py-2 rounded-2xl border border-gray-200 text-sm"
+              onClick={() => { setCompactMode((c)=>!c) }}
+              title="Toggle compact display"
+            >
+              {compactMode ? "Full" : "Compact"}
+            </button>
+            <div className="relative">
+              <input
+                className="px-3 py-2 rounded-2xl border border-gray-200 text-sm"
+                placeholder="Cari..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
             </div>
           </div>
-        ))}
-      </section>
+        </header>
 
-      <section className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-sm">Filter color</label>
-          <select value={filter.color} onChange={(e) => setFilter((f) => ({ ...f, color: e.target.value }))} className="border rounded px-2 py-1">
-            {uniqueColors.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm">Filter style</label>
-          <select value={filter.style} onChange={(e) => setFilter((f) => ({ ...f, style: e.target.value }))} className="border rounded px-2 py-1">
-            {uniqueStyles.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-        <div className="text-sm text-gray-500 ml-auto">Tip: Lock items you like, then press Randomize to change the rest.</div>
-      </section>
-
-      <section>
-        <h3 className="font-semibold mb-2">Saved Outfits</h3>
-        {saved.length === 0 ? (
-          <div className="text-gray-500">No saved outfits yet.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {saved.map((o) => (
-              <div key={o.id} className="p-3 rounded border flex items-center gap-3">
-                <div className="flex gap-2">
-                  {KINDS.map((k) => (
-                    <img key={k} src={o.items[k]?.image} alt={o.items[k]?.name} className="w-16 h-16 object-cover rounded" />
-                  ))}
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium">{o.name}</div>
-                  <div className="text-xs text-gray-500">Saved at {new Date(o.id).toLocaleString()}</div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <button onClick={() => { setSelected(o.items); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="px-3 py-1 rounded border text-sm">Load</button>
-                  <button onClick={() => removeSaved(o.id)} className="px-3 py-1 rounded text-sm bg-red-50 text-red-600">Delete</button>
-                </div>
-              </div>
-            ))}
+        {/* Widget */}
+        {isWidgetOpen && (
+          <div className="mb-4">
+            <Widget
+              notes={notes}
+              onOpenNote={(id) => { setEditing(id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            />
           </div>
         )}
-      </section>
 
-      <footer className="text-xs text-gray-500">Built with ❤️ — customize the library array to add your own images and items.</footer>
+        <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.length === 0 && (
+            <div className="col-span-full p-6 rounded-2xl bg-white shadow-sm text-center opacity-80">
+              <p>Tidak ada catatan. Klik "Tambah" untuk memulai.</p>
+            </div>
+          )}
+
+          {filtered.map((note) => (
+            <div
+              key={note.id}
+              draggable
+              onDragStart={(e) => onDragStart(e, note.id)}
+              onDragOver={(e) => onDragOver(e, note.id)}
+              onDragEnd={onDragEnd}
+              className={`p-4 rounded-2xl shadow-lg cursor-grab select-none transition-transform transform hover:-translate-y-1`}>
+
+              <div className={`rounded-xl p-3 bg-gradient-to-br ${GENZ_PALETTE[note.colorIdx % GENZ_PALETTE.length]} relative`}>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold text-lg break-words">{note.title || <em>Tanpa judul</em>}</h3>
+                    <p className={`mt-2 text-sm whitespace-pre-wrap break-words ${compactMode ? 'line-clamp-3' : ''}`}>{note.body || <em>Ketik untuk menambahkan detail...</em>}</p>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-2">
+                    <button
+                      className={`px-2 py-1 rounded-full text-xs border ${note.pinned ? 'bg-white/80' : 'bg-white/60'}`}
+                      onClick={() => togglePin(note.id)}
+                      title="Pin"
+                    >
+                      {note.pinned ? '📌' : '📍'}
+                    </button>
+
+                    <div className="flex flex-col gap-1">
+                      <button
+                        className="text-xs px-2 py-1 rounded-full bg-white/70"
+                        onClick={() => setEditing(note.id)}
+                        title="Edit (double-click juga)"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="text-xs px-2 py-1 rounded-full bg-white/60"
+                        onClick={() => { if (confirm('Hapus catatan ini?')) removeNote(note.id); }}
+                        title="Hapus"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 text-[0.7rem] opacity-80 flex justify-between items-center">
+                  <div>#{note.id.slice(0,4)}</div>
+                  <div>{new Date(note.createdAt).toLocaleString()}</div>
+                </div>
+
+                {/* quick color swatches */}
+                <div className="absolute left-3 -bottom-4 flex gap-1">
+                  {GENZ_PALETTE.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => updateNote(note.id, { colorIdx: i })}
+                      className={`w-6 h-6 rounded-lg border`}>
+                      <div className={`w-full h-full rounded-lg bg-gradient-to-br ${GENZ_PALETTE[i]}`} />
+                    </button>
+                  ))}
+                </div>
+
+                {/* double-click to edit */}
+                <div
+                  onDoubleClick={() => setEditing(note.id)}
+                  style={{ position: 'absolute', inset: 0 }}
+                />
+              </div>
+            </div>
+          ))}
+        </main>
+
+        {/* Utilities */}
+        <footer className="mt-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm">Import / Export</label>
+            <input
+              type="file"
+              accept="application/json"
+              onChange={(e) => e.target.files?.[0] && importJSON(e.target.files[0])}
+              className="text-sm"
+            />
+            <button className="px-3 py-1 rounded-2xl border text-sm" onClick={exportJSON}>Export JSON</button>
+          </div>
+
+          <div className="text-sm opacity-80">{notes.length} notes • localStorage only</div>
+        </footer>
+      </div>
+
+      {/* Editor modal */}
+      {editing && (
+        <Editor
+          note={notes.find((n) => n.id === editing) || { id: editing, title: '', body: '', colorIdx: 0 }}
+          onSave={(patch) => { updateNote(editing, patch); setEditing(null); }}
+          onCancel={() => setEditing(null)}
+          onDelete={() => { if (confirm('Hapus catatan ini?')) { removeNote(editing); setEditing(null); } }}
+        />
+      )}
+    </div>
+  );
+}
+
+function Editor({ note, onSave, onCancel, onDelete }) {
+  const [title, setTitle] = useState(note.title || "");
+  const [body, setBody] = useState(note.body || "");
+  const [colorIdx, setColorIdx] = useState(note.colorIdx || 0);
+
+  useEffect(() => {
+    setTitle(note.title || "");
+    setBody(note.body || "");
+    setColorIdx(note.colorIdx || 0);
+  }, [note]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-2xl p-6 rounded-3xl bg-white shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Edit Catatan</h2>
+          <div className="flex gap-2">
+            <button className="px-3 py-1 rounded-2xl border" onClick={() => onCancel()}>Batal</button>
+            <button className="px-3 py-1 rounded-2xl bg-gradient-to-r from-pink-400 to-yellow-300 text-white" onClick={() => onSave({ title, body, colorIdx })}>Simpan</button>
+          </div>
+        </div>
+
+        <input className="w-full mb-3 p-3 rounded-xl border" placeholder="Judul" value={title} onChange={(e)=>setTitle(e.target.value)} />
+        <textarea className="w-full h-40 p-3 rounded-xl border resize-none" placeholder="Detail tugas..." value={body} onChange={(e)=>setBody(e.target.value)} />
+
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <label className="text-sm mr-2">Warna</label>
+            {GENZ_PALETTE.map((p, i) => (
+              <button key={i} onClick={() => setColorIdx(i)} className={`w-8 h-8 rounded-lg border ${i === colorIdx ? 'ring-2 ring-offset-2' : ''}`}>
+                <div className={`w-full h-full rounded-lg bg-gradient-to-br ${p}`} />
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button className="px-3 py-1 rounded-2xl border text-sm" onClick={() => onDelete()}>Hapus</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Widget({ notes, onOpenNote }) {
+  // compact widget: top 3 (pinned first)
+  const top = [...notes].sort((a,b) => (b.pinned - a.pinned) || (b.createdAt - a.createdAt)).slice(0, 3);
+  return (
+    <div className="p-3 rounded-2xl bg-white/90 shadow-md">
+      <div className="flex items-center justify-between mb-2">
+        <strong>MiniTasks Widget</strong>
+        <small className="opacity-80">Quick view</small>
+      </div>
+      <div className="grid grid-cols-1 gap-2">
+        {top.length === 0 && <div className="text-sm opacity-70">(belum ada catatan)</div>}
+        {top.map((n) => (
+          <button key={n.id} className="text-left p-2 rounded-xl border" onClick={() => onOpenNote(n.id)}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${GENZ_PALETTE[n.colorIdx % GENZ_PALETTE.length]}`} />
+                <div className="text-sm font-semibold truncate" style={{maxWidth: 180}}>{n.title || '(tanpa judul)'}</div>
+              </div>
+              <div className="text-xs opacity-70">{n.pinned ? '📌' : ''}</div>
+            </div>
+            <div className="text-xs opacity-70 line-clamp-1">{n.body}</div>
+          </button>
+        ))}
+      </div>
+      <div className="mt-3 text-xs opacity-70">Tip: buka widget untuk edit cepat.</div>
     </div>
   );
 }
