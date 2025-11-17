@@ -1,417 +1,134 @@
-import React, { useState, useEffect, useRef } from "react";
-
-// E-Learning Mini - Single-file React component
-// Assumptions: TailwindCSS is available in the project
-// Usage: paste into src/App.jsx (or App.tsx with minor tweaks) in a Create React App / Vite React project
-
-export default function ElearningApp() {
-  // sample course data (in a real app this comes from an API)
-  const sampleCourses = [
-    {
-      id: "course-1",
-      title: "Dasar Pemrograman JavaScript",
-      description:
-        "Pelajari dasar-dasar JavaScript: variabel, fungsi, DOM, dan logika pemrograman.",
-      image: "https://images.unsplash.com/photo-1526378721985-1b0f3c6b7d3d?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=5fcf5c0d81b19e3c8b0d0c3b2c9c9a1a",
-      modules: [
-        {
-          id: "m1",
-          title: "Pengenalan",
-          lessons: [
-            {
-              id: "l1",
-              title: "Apa itu JavaScript?",
-              type: "video",
-              videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-              duration: 45,
-            },
-            {
-              id: "l2",
-              title: "Menjalankan JS di Browser",
-              type: "video",
-              videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-              duration: 120,
-            },
-          ],
-        },
-        {
-          id: "m2",
-          title: "Struktur Data & Kontrol",
-          lessons: [
-            {
-              id: "l3",
-              title: "Variabel & Tipe Data",
-              type: "article",
-              content: "Variabel menyimpan data. JS memiliki Number, String, Boolean, Object, Array...",
-              duration: 20,
-            },
-            {
-              id: "l4",
-              title: "Percabangan & Perulangan",
-              type: "video",
-              videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-              duration: 90,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "course-2",
-      title: "Desain Web Dasar",
-      description: "Pelajari HTML & CSS dasar untuk membuat halaman web responsif.",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd",
-      modules: [],
-    },
-  ];
-
-  // ----- state -----
-  const [courses] = useState(sampleCourses);
-  const [selectedCourseId, setSelectedCourseId] = useState(courses[0].id);
-  const [selectedLessonId, setSelectedLessonId] = useState(null);
-  const [user, setUser] = useState(() => {
-    // simple persisted 'user'
-    const u = localStorage.getItem("elearn_user");
-    return u ? JSON.parse(u) : { name: "Guest" };
-  });
-
-  // progress: map lessonId -> boolean (completed)
-  const [progress, setProgress] = useState(() => {
-    const raw = localStorage.getItem("elearn_progress");
-    return raw ? JSON.parse(raw) : {};
-  });
-
-  // video ref for auto-saving timestamp (optional)
-  const videoRef = useRef(null);
-
-  // persist progress & user
-  useEffect(() => {
-    localStorage.setItem("elearn_progress", JSON.stringify(progress));
-  }, [progress]);
-
-  useEffect(() => {
-    localStorage.setItem("elearn_user", JSON.stringify(user));
-  }, [user]);
-
-  // helpers to find course / lesson
-  const selectedCourse = courses.find((c) => c.id === selectedCourseId);
-
-  function findLessonById(lessonId) {
-    for (const m of selectedCourse.modules) {
-      for (const l of m.lessons) {
-        if (l.id === lessonId) return l;
-      }
-    }
-    return null;
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tes Zodiak Pink - Mode Ganda</title>
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ffc1e3, #ffe4f2);
+    color: #d63384;
+    text-align: center;
+    padding: 40px;
   }
-
-  function handleSelectCourse(id) {
-    setSelectedCourseId(id);
-    setSelectedLessonId(null);
+  h1 { font-size: 2.5rem; color: #ff4fa3; }
+  .mode-btn {
+    background: #ff77c9;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    margin: 5px;
+    color: white;
   }
-
-  function handleSelectLesson(lessonId) {
-    setSelectedLessonId(lessonId);
-    // scroll to player
-    const el = document.getElementById("lesson-player");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+  .active { background: #ff3fa5; }
+  .card {
+    background: #ffffffcc;
+    border-radius: 20px;
+    padding: 20px;
+    width: 340px;
+    margin: 20px auto;
+    box-shadow: 0 10px 20px rgba(255, 0, 128, 0.25);
   }
-
-  function toggleComplete(lessonId) {
-    setProgress((prev) => {
-      const copy = { ...prev };
-      copy[lessonId] = !copy[lessonId];
-      return copy;
-    });
+  input, textarea {
+    width: 80%; padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 2px solid #ff8ac9;
   }
+  button { padding: 10px 20px; margin-top: 15px; background:#ff66b3; color:white; border:none; border-radius:20px; cursor:pointer; }
+  button:hover { background:#ff3f99; }
+  .result { margin-top:20px; font-size:1.2rem; font-weight:600; opacity:0; transition:opacity .6s ease; }
+  .show { opacity:1; }
+  .love { font-size:1.8rem; animation:pulse 1s infinite alternate; }
+  @keyframes pulse{ from{transform:scale(1);} to{transform:scale(1.2);} }
+  .pop{ animation:pop .5s ease; }
+  @keyframes pop{ 0%{transform:scale(.5);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+</style>
+</head>
+<body>
+<h1>💗 Tes Zodiak Mode Ganda 💗</h1>
 
-  function courseProgress(course) {
-    const allLessons = course.modules.flatMap((m) => m.lessons.map((l) => l.id));
-    if (allLessons.length === 0) return 0;
-    const done = allLessons.filter((id) => progress[id]);
-    return Math.round((done.length / allLessons.length) * 100);
+<!-- MODE SELECTOR -->
+<button class="mode-btn active" onclick="setMode('tanggal')">Tanggal Lahir 💕</button>
+<button class="mode-btn" onclick="setMode('kepribadian')">Kepribadian 💞</button>
+
+<!-- CARD TANGGAL LAHIR -->
+<div id="modeTanggal" class="card">
+  <p>Masukkan tanggal lahirmu</p>
+  <input type="date" id="birth" />
+  <button onclick="cekZodiakTanggal()">Cek Zodiak 💗</button>
+</div>
+
+<!-- CARD KEPRIBADIAN -->
+<div id="modeKepribadian" class="card" style="display:none;">
+  <p>Deskripsikan sedikit tentang dirimu 💖</p>
+  <textarea id="desc" rows="4" placeholder="Contoh: aku orangnya sensitif dan penyayang..."></textarea>
+  <button onclick="cekZodiakKepribadian()">Tebak Zodiak 💕</button>
+</div>
+
+<div id="hasil" class="result"></div>
+
+<script>
+function setMode(mode){
+  document.querySelectorAll('.mode-btn').forEach(btn=>btn.classList.remove('active'));
+  if(mode==='tanggal'){
+    document.querySelectorAll('.mode-btn')[0].classList.add('active');
+    document.getElementById('modeTanggal').style.display='block';
+    document.getElementById('modeKepribadian').style.display='none';
+  } else {
+    document.querySelectorAll('.mode-btn')[1].classList.add('active');
+    document.getElementById('modeTanggal').style.display='none';
+    document.getElementById('modeKepribadian').style.display='block';
   }
-
-  function handleLoginAs(name) {
-    setUser({ name });
-  }
-
-  function downloadCertificate() {
-    // simple printable certificate using window.open
-    const certHtml = `
-      <html>
-      <head>
-      <title>Certificate</title>
-      <style>
-        body{font-family: Arial, sans-serif;display:flex;align-items:center;justify-content:center;height:100vh}
-        .card{border:4px solid #2b6cb0;padding:40px;text-align:center;border-radius:8px}
-        h1{margin:0 0 8px}
-      </style>
-      </head>
-      <body>
-      <div class="card">
-        <h1>Certificate of Completion</h1>
-        <p>This certifies that</p>
-        <h2>${user.name}</h2>
-        <p>has completed the course</p>
-        <h3>${selectedCourse.title}</h3>
-        <p>Date: ${new Date().toLocaleDateString()}</p>
-      </div>
-      <script>window.print()</script>
-      </body>
-      </html>
-    `;
-
-    const w = window.open("", "_blank");
-    if (w) {
-      w.document.write(certHtml);
-      w.document.close();
-    } else {
-      alert("Pop-up blocked. Izinkan pop-up untuk mencetak sertifikat.");
-    }
-  }
-
-  // UI
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <header className="bg-white shadow">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="text-2xl font-bold">E-Learn Mini</div>
-            <nav className="hidden md:flex gap-2 text-sm text-gray-600">
-              <button className="px-3 py-2 rounded hover:bg-gray-100" onClick={() => {setSelectedCourseId(courses[0].id);}}>Kursus</button>
-              <button className="px-3 py-2 rounded hover:bg-gray-100" onClick={() => {setSelectedLessonId(null);}}>Dashboard</button>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-600">Halo, <strong>{user.name}</strong></div>
-            <div className="flex items-center gap-2">
-              <input
-                placeholder="Nama (login cepat)"
-                className="px-2 py-1 border rounded text-sm"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleLoginAs(e.currentTarget.value || "Guest");
-                }}
-              />
-              <button
-                className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
-                onClick={() => handleLoginAs(prompt("Masukkan nama untuk login:") || "Guest")}
-              >
-                Login
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* course list / sidebar */}
-        <aside className="md:col-span-1 bg-white p-4 rounded shadow">
-          <h3 className="font-semibold mb-3">Kursus</h3>
-          <div className="flex flex-col gap-3">
-            {courses.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => handleSelectCourse(c.id)}
-                className={`text-left p-2 rounded hover:bg-gray-50 ${c.id === selectedCourseId ? "border-l-4 border-blue-600 bg-blue-50" : ""}`}
-              >
-                <div className="font-medium">{c.title}</div>
-                <div className="text-xs text-gray-500">{courseProgress(c)}% selesai</div>
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-6">
-            <h4 className="font-semibold">Profil</h4>
-            <div className="text-sm text-gray-600">Nama: {user.name}</div>
-            <div className="mt-3">
-              <button
-                className="px-3 py-1 bg-green-600 text-white rounded text-sm"
-                onClick={() => downloadCertificate()}
-              >
-                Cetak Sertifikat
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* main content */}
-        <section className="md:col-span-3">
-          <div className="bg-white p-4 rounded shadow">
-            <div className="flex items-center gap-4">
-              <img src={selectedCourse.image} alt="cover" className="w-28 h-16 object-cover rounded" />
-              <div>
-                <h2 className="text-xl font-bold">{selectedCourse.title}</h2>
-                <p className="text-sm text-gray-600">{selectedCourse.description}</p>
-                <div className="text-xs text-gray-500 mt-1">Progress kursus: {courseProgress(selectedCourse)}%</div>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                {/* lesson player or placeholder */}
-                {selectedLessonId ? (
-                  <div id="lesson-player" className="bg-gray-100 p-4 rounded">
-                    <LessonPlayer
-                      lesson={findLessonById(selectedLessonId)}
-                      videoRef={videoRef}
-                      onToggleComplete={() => toggleComplete(selectedLessonId)}
-                      completed={!!progress[selectedLessonId]}
-                    />
-                  </div>
-                ) : (
-                  <div className="bg-gray-50 p-6 rounded text-center text-gray-600">Pilih lesson untuk memulai</div>
-                )}
-              </div>
-
-              <div className="md:col-span-1 bg-white border rounded p-3">
-                <h4 className="font-semibold mb-2">Daftar Modul & Lesson</h4>
-                <div className="space-y-3 max-h-72 overflow-auto pr-2">
-                  {selectedCourse.modules.length === 0 && <div className="text-sm text-gray-500">Belum ada modul.</div>}
-                  {selectedCourse.modules.map((m) => (
-                    <div key={m.id}>
-                      <div className="font-medium">{m.title}</div>
-                      <div className="text-sm mt-1">
-                        {m.lessons.map((l) => (
-                          <div key={l.id} className="flex items-center justify-between mt-2">
-                            <button className="text-sm text-left" onClick={() => handleSelectLesson(l.id)}>
-                              {l.title}
-                            </button>
-                            <div className="flex items-center gap-2">
-                              <div className="text-xs text-gray-500">{l.type}</div>
-                              <div className="text-xs">{progress[l.id] ? "✅" : ""}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* simple course footer actions */}
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-gray-500">Total modul: {selectedCourse.modules.length}</div>
-              <div className="flex items-center gap-2">
-                <button
-                  className="px-3 py-1 rounded border hover:bg-gray-50"
-                  onClick={() => {
-                    // mark all as completed
-                    const all = {};
-                    selectedCourse.modules.forEach((m) => m.lessons.forEach((l) => (all[l.id] = true)));
-                    setProgress((prev) => ({ ...prev, ...all }));
-                  }}
-                >
-                  Tandai semua selesai
-                </button>
-
-                <button className="px-3 py-1 bg-blue-600 text-white rounded" onClick={() => alert("Fitur kuis belum tersedia (placeholder)")}>Mulai Kuis</button>
-              </div>
-            </div>
-          </div>
-
-          {/* small dashboard: show recently completed lessons */}
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded shadow">
-              <h4 className="font-semibold">Aktivitas Terbaru</h4>
-              <RecentActivity courses={courses} progress={progress} onOpenLesson={handleSelectLesson} />
-            </div>
-
-            <div className="bg-white p-4 rounded shadow">
-              <h4 className="font-semibold">Pengaturan</h4>
-              <div className="text-sm text-gray-600 mt-2">
-                Simpan progress di localStorage. Untuk memulai ulang, klik tombol di bawah.
-              </div>
-              <div className="mt-3 flex gap-2">
-                <button
-                  className="px-3 py-1 border rounded"
-                  onClick={() => {
-                    localStorage.removeItem("elearn_progress");
-                    setProgress({});
-                  }}
-                >
-                  Reset Progress
-                </button>
-                <button
-                  className="px-3 py-1 border rounded"
-                  onClick={() => {
-                    localStorage.removeItem("elearn_user");
-                    setUser({ name: "Guest" });
-                  }}
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="text-center text-xs text-gray-500 py-6">© {new Date().getFullYear()} E-Learn Mini — Demo</footer>
-    </div>
-  );
+  document.getElementById('hasil').innerHTML='';
 }
 
-// ------------ Subcomponents ------------
-
-function LessonPlayer({ lesson, videoRef, onToggleComplete, completed }) {
-  if (!lesson) return null;
-
-  return (
-    <div>
-      <h3 className="font-semibold">{lesson.title}</h3>
-      <div className="text-xs text-gray-500 mb-2">Tipe: {lesson.type} • Durasi ~{lesson.duration || "-"} menit</div>
-
-      {lesson.type === "video" ? (
-        <div>
-          <video ref={videoRef} controls src={lesson.videoUrl} className="w-full rounded mb-2" />
-          <div className="flex items-center gap-2">
-            <button className="px-3 py-1 bg-green-600 text-white rounded text-sm" onClick={onToggleComplete}>
-              {completed ? "Batalkan Selesai" : "Tandai Selesai"}
-            </button>
-            <button className="px-3 py-1 border rounded text-sm" onClick={() => alert("Catatan: fitur diskusi belum tersedia")}>Diskusi</button>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-white p-3 rounded">
-          <p className="text-sm text-gray-700">{lesson.content}</p>
-          <div className="mt-3">
-            <button className="px-3 py-1 bg-green-600 text-white rounded text-sm" onClick={onToggleComplete}>
-              {completed ? "Batalkan Selesai" : "Tandai Selesai"}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function zodiakFromDate(d,m){
+  if((m===3&&d>=21)||(m===4&&d<=19)) return 'Aries ♈ – Energi & keberanian 💥';
+  if((m===4&&d>=20)||(m===5&&d<=20)) return 'Taurus ♉ – Stabil & penyayang 💗';
+  if((m===5&&d>=21)||(m===6&&d<=20)) return 'Gemini ♊ – Ceria & pintar 😘';
+  if((m===6&&d>=21)||(m===7&&d<=22)) return 'Cancer ♋ – Lembut & penuh cinta 💞';
+  if((m===7&&d>=23)||(m===8&&d<=22)) return 'Leo ♌ – Kharismatik ✨';
+  if((m===8&&d>=23)||(m===9&&d<=22)) return 'Virgo ♍ – Rapi & perhatian 💕';
+  if((m===9&&d>=23)||(m===10&&d<=22)) return 'Libra ♎ – Estetik & romantis 💖';
+  if((m===10&&d>=23)||(m===11&&d<=21)) return 'Scorpio ♏ – Misterius & intens 🔥';
+  if((m===11&&d>=22)||(m===12&&d<=21)) return 'Sagittarius ♐ – Bebas & fun 💘';
+  if((m===12&&d>=22)||(m===1&&d<=19)) return 'Capricorn ♑ – Ambisius 💗';
+  if((m===1&&d>=20)||(m===2&&d<=18)) return 'Aquarius ♒ – Unik & kreatif 💞';
+  return 'Pisces ♓ – Dreamy & penuh cinta 💗';
 }
 
-function RecentActivity({ courses, progress, onOpenLesson }) {
-  // collect completed lessons
-  const items = [];
-  for (const c of courses) {
-    for (const m of c.modules) {
-      for (const l of m.lessons) {
-        if (progress[l.id]) items.push({ course: c.title, module: m.title, lesson: l });
-      }
-    }
-  }
-
-  if (items.length === 0) return <div className="text-sm text-gray-500 mt-2">Belum ada aktivitas.</div>;
-
-  return (
-    <div className="mt-2 space-y-2">
-      {items.slice(-6).reverse().map((it, idx) => (
-        <div key={idx} className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium">{it.lesson.title}</div>
-            <div className="text-xs text-gray-500">{it.module} — {it.course}</div>
-          </div>
-          <button className="text-xs px-2 py-1 border rounded" onClick={() => onOpenLesson(it.lesson.id)}>Buka</button>
-        </div>
-      ))}
-    </div>
-  );
+function cekZodiakTanggal(){
+  const val=document.getElementById('birth').value;
+  if(!val) return alert('Isi tanggal lahir dulu yaa 💖');
+  const date=new Date(val);
+  const d=date.getDate();
+  const m=date.getMonth()+1;
+  tampilkan(zodiakFromDate(d,m));
 }
+
+function cekZodiakKepribadian(){
+  const text=document.getElementById('desc').value.toLowerCase();
+  if(!text) return alert('Tulis sedikit tentang dirimu dulu 💗');
+  let guess='';
+  if(text.includes('sensitif')||text.includes('penyayang')||text.includes('care')) guess='Cancer ♋ atau Pisces ♓ – vibes lembut 💞';
+  else if(text.includes('pemimpin')||text.includes('percaya diri')) guess='Leo ♌ – kuat & bersinar ✨';
+  else if(text.includes('pemikir')||text.includes('unik')) guess='Aquarius ♒ – original banget 💗';
+  else if(text.includes('detail')||text.includes('rapi')) guess='Virgo ♍ – perfeksionis manis 💕';
+  else if(text.includes('petualang')||text.includes('bebas')) guess='Sagittarius ♐ – fun & eksploratif 💘';
+  else guess='Libra ♎ – sweet & easygoing 💖';
+
+  tampilkan(guess);
+}
+
+function tampilkan(text){
+  const hasil=document.getElementById('hasil');
+  hasil.innerHTML=`<div class='love'>💗💖💗</div><br>${text}`;
+  hasil.classList.add('show','pop');
+  setTimeout(()=>hasil.classList.remove('pop'),700);
+}
+</script>
+</body>
+</html>
