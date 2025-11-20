@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kalkulator Kesehatan Pink</title>
+<style>
+    body{
+        font-family: 'Poppins', sans-serif;
+        background: #ffd7e9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .card{
+        background: #fff;
+        width: 90%;
+        max-width: 450px;
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0 0 20px rgba(255, 100, 150, 0.3);
+        text-align: center;
+    }
+
+    h1{
+        color: #ff4f9a;
+        margin-bottom: 15px;
+    }
+
+    label{
+        display: block;
+        text-align: left;
+        margin-top: 10px;
+        font-weight: 600;
+        color: #ff4f9a;
+    }
+
+    input{
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 2px solid #ff9ec9;
+        outline: none;
+        margin-top: 5px;
+        font-size: 15px;
+    }
+
+    button{
+        margin-top: 20px;
+        width: 100%;
+        padding: 12px;
+        background: #ff4f9a;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover{
+        background: #ff2f87;
+    }
+
+    #hasil{
+        margin-top: 20px;
+        background: #ffe3f0;
+        padding: 15px;
+        border-radius: 12px;
+        display: none;
+        text-align: left;
+    }
+
+    .bar-container{
+        width: 100%;
+        background: #ffd1e5;
+        border-radius: 10px;
+        margin-top: 10px;
+    }
+
+    .bar{
+        height: 18px;
+        background: #ff4f9a;
+        width: 0%;
+        border-radius: 10px;
+    }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Kalkulator Kesehatan</h1>
+
+    <label>Berat Badan (kg)</label>
+    <input type="number" id="bb">
+
+    <label>Tinggi Badan (cm)</label>
+    <input type="number" id="tb">
+
+    <label>Umur</label>
+    <input type="number" id="umur">
+
+    <button onclick="hitung()">Hitung Sekarang</button>
+
+    <div id="hasil"></div>
+</div>
+
+<audio id="doneSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7b2f0be92f.mp3?filename=correct-2-46134.mp3"></audio>
+
+<script>
+function hitung(){
+    let bb = parseFloat(document.getElementById('bb').value);
+    let tb = parseFloat(document.getElementById('tb').value) / 100;
+    let umur = parseFloat(document.getElementById('umur').value);
+
+    if(!bb || !tb || !umur){
+        alert("Isi semua data dulu ya!");
+        return;
+    }
+
+    let bmi = bb / (tb * tb);
+    let kalori = 10 * bb + 6.25 * (tb*100) - 5 * umur + 5;
+    let persenIdeal = Math.min(100, Math.max(0, 100 - Math.abs(bmi - 22) * 5));
+
+    let rekom;
+    if(bmi < 18.5) rekom = "Perbanyak makan karbo berkualitas, protein, susu, dan kacang-kacangan.";
+    else if(bmi < 25) rekom = "Pertahankan pola makan seimbang, sayur, buah, dan minum air cukup.";
+    else rekom = "Kurangi makanan berminyak, gula tinggi, dan perbanyak buah & sayur.";
+
+    const hasil = document.getElementById('hasil');
+    hasil.style.display = "block";
+
+    hasil.innerHTML = `
+        <h3>Hasil Analisis</h3>
+        <p><b>BMI:</b> ${bmi.toFixed(1)}</p>
+        <p><b>Kalori Harian:</b> ${kalori.toFixed(0)} kkal</p>
+        <p><b>Rekomendasi Makanan:</b> ${rekom}</p>
+        <p><b>Persentase Kesehatan</b></p>
+        <div class="bar-container"><div class="bar" id="bar"></div></div>
+        <p>${persenIdeal.toFixed(0)}%</p>
+    `;
+
+    let bar = document.getElementById('bar');
+    bar.style.width = persenIdeal + "%";
+
+    document.getElementById('doneSound').play();
+}
+</script>
+
+</body>
+</html>
